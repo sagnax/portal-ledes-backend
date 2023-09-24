@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SituacaoCadastro {
+  id              Int       @id @default(autoincrement())
+  nome            String
+  created         DateTime? @default(now())
+  updated         DateTime? @updatedAt
+  userCreated    Usuario?  @relation("SituacaoCadastro_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId Int?
+  userUpdated    Usuario?  @relation("SituacaoCadastro_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId Int?
+
+  // Relations
+  Usuario_SituacaoCadastro Usuario[] @relation("Usuario_SituacaoCadastro")
+}
+
+model Usuario {
+  id                   Int               @id @default(autoincrement())
+  nome                 String?
+  sobrenome            String?
+  email                String            @unique
+  senha                String
+  linkedin             String?
+  github               String?
+  curso                String?
+  funcao               Int               @default(0)
+  foto                 String?
+  permissaoAdmin       Int               @default(0)
+  permissaoProjetos    Int               @default(0)
+  permissaoPublicacoes Int               @default(0)
+  permissaoUsuarios    Int               @default(0)
+  createdAt            DateTime?         @default(now())
+  updatedAt            DateTime?         @updatedAt
+  situacaoCadastro     SituacaoCadastro? @relation("Usuario_SituacaoCadastro", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId   Int?
+  userCreated          Usuario?          @relation("Usuario_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId        Int?
+  userUpdated          Usuario?          @relation("Usuario_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId        Int?
+
+  // Relations
+  Usuario_UserCreated          Usuario[]          @relation("Usuario_UserCreated")
+  Usuario_UserUpdated          Usuario[]          @relation("Usuario_UserUpdated")
+  SituacaoCadastro_UserCreated SituacaoCadastro[] @relation("SituacaoCadastro_UserCreated")
+  SituacaoCadastro_UserUpdated SituacaoCadastro[] @relation("SituacaoCadastro_UserUpdated")
+}
