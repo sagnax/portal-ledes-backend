@@ -143,12 +143,17 @@ cp .env.example .env
 DATABASE_URL="<adapter>://<usuario>:<senha>@localhost:5432/<nome-banco>?schema=public"
 ```
 
-### 4. Sincronizar o Banco de Dados com o Schema do Prisma (Migration)
+### 4. Sincronizar o Banco de Dados com o Schema do Prisma (Sincronizar)
 ```bash
 bunx prisma db push
 ```
 
-### 2. Inicie o Servidor/Bun
+#### 4.1. Sincronizar o Banco de Dados com o Schema do Prisma (Gerar Migration)
+```bash
+bunx prisma db push
+```
+
+### 5. Inicie o Servidor/Bun
 ```bash
 bun run dev
 ```

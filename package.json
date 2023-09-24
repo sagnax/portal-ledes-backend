@@ -6,8 +6,11 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
-    "@prisma/client": "5.3.1",
+    "@prisma/client": "^5.3.1",
     "elysia": "latest"
+  },
+  "prisma": {
+    "seed": "bun prisma/seed.ts"
   },
   "devDependencies": {
     "bun-types": "latest",

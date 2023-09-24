@@ -10,47 +10,265 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model SituacaoCadastro {
-  id              Int       @id @default(autoincrement())
-  nome            String
-  created         DateTime? @default(now())
-  updated         DateTime? @updatedAt
-  userCreated    Usuario?  @relation("SituacaoCadastro_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userCreatedId Int?
-  userUpdated    Usuario?  @relation("SituacaoCadastro_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userUpdatedId Int?
+model SituacaoCadastros {
+  id   Int    @id @default(autoincrement())
+  nome String
+
+  // Esses sempre por último
+  created DateTime? @default(now())
+  updated DateTime? @updatedAt
 
   // Relations
-  Usuario_SituacaoCadastro Usuario[] @relation("Usuario_SituacaoCadastro")
+  usuarios              Usuarios[]              @relation("Usuarios_SituacaoCadastros")
+  projetos              Projetos[]              @relation("Projetos_SituacaoCadastros")
+  tipoSituacoesProjetos TipoSituacoesProjetos[] @relation("TipoSituacoesProjetos_SituacaoCadastros")
+  tipoProjetos          TipoProjetos[]          @relation("TipoProjetos_SituacaoCadastros")
+  projetoUsuarios       Projeto_Usuarios[]       @relation("Projeto_Usuarios_SituacaoCadastros")
+  tipoVinulos           TipoVinculos[]          @relation("TipoVinculos_SituacaoCadastros")
+  tipoPapeis            TipoPapeis[]            @relation("TipoPapeis_SituacaoCadastros")
+  publicacoes           Publicacoes[]           @relation("Publicacoes_SituacaoCadastros")
+  anexos                Anexos[]                @relation("Anexos_SituacaoCadastros")
+  publicacaoAnexos      Publicacao_Anexos[]     @relation("Publicacao_Anexos_SituacaoCadastros")
 }
 
-model Usuario {
-  id                   Int               @id @default(autoincrement())
+model Usuarios {
+  id                   Int     @id @default(autoincrement())
   nome                 String?
   sobrenome            String?
-  email                String            @unique
+  email                String  @unique
   senha                String
   linkedin             String?
   github               String?
   curso                String?
-  funcao               Int               @default(0)
+  funcao               Int     @default(0)
   foto                 String?
-  permissaoAdmin       Int               @default(0)
-  permissaoProjetos    Int               @default(0)
-  permissaoPublicacoes Int               @default(0)
-  permissaoUsuarios    Int               @default(0)
-  createdAt            DateTime?         @default(now())
-  updatedAt            DateTime?         @updatedAt
-  situacaoCadastro     SituacaoCadastro? @relation("Usuario_SituacaoCadastro", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId   Int?
-  userCreated          Usuario?          @relation("Usuario_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userCreatedId        Int?
-  userUpdated          Usuario?          @relation("Usuario_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  userUpdatedId        Int?
+  permissaoAdmin       Boolean @default(false)
+  permissaoProjetos    Boolean @default(false)
+  permissaoPublicacoes Boolean @default(false)
+  permissaoUsuarios    Boolean @default(false)
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("Usuarios_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("Usuarios_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("Usuarios_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
 
   // Relations
-  Usuario_UserCreated          Usuario[]          @relation("Usuario_UserCreated")
-  Usuario_UserUpdated          Usuario[]          @relation("Usuario_UserUpdated")
-  SituacaoCadastro_UserCreated SituacaoCadastro[] @relation("SituacaoCadastro_UserCreated")
-  SituacaoCadastro_UserUpdated SituacaoCadastro[] @relation("SituacaoCadastro_UserUpdated")
+  coordenadorProjetos Projetos[] @relation("Projetos_Usuarios")
+  projetoUsuarios     Projeto_Usuarios[] @relation("Projeto_Usuarios_Usuarios")
+
+  userCreatedUsuarios              Usuarios[]              @relation("Usuarios_UserCreated")
+  userUpdatedUsuarios              Usuarios[]              @relation("Usuarios_UserUpdated")
+  userCreatedProjetos              Projetos[]              @relation("Projetos_UserCreated")
+  userUpdatedProjetos              Projetos[]              @relation("Projetos_UserUpdated")
+  userCreatedTipoSituacoesProjetos TipoSituacoesProjetos[] @relation("TipoSituacoesProjetos_UserCreated")
+  userUpdatedTipoSituacoesProjetos TipoSituacoesProjetos[] @relation("TipoSituacoesProjetos_UserUpdated")
+  userCreatedTipoProjetos          TipoProjetos[]          @relation("TipoProjetos_UserCreated")
+  userUpdatedTipoProjetos          TipoProjetos[]          @relation("TipoProjetos_UserUpdated")
+  userCreatedProjetoUsuarios       Projeto_Usuarios[]       @relation("Projeto_Usuarios_UserCreated")
+  userUpdatedProjetoUsuarios       Projeto_Usuarios[]       @relation("Projeto_Usuarios_UserUpdated")
+  userCreatedTipoVinculos          TipoVinculos[]          @relation("TipoVinculos_UserCreated")
+  userUpdatedTipoVinculos          TipoVinculos[]          @relation("TipoVinculos_UserUpdated")
+  userCreatedTipoPapeis            TipoPapeis[]            @relation("TipoPapeis_UserCreated")
+  userUpdatedTipoPapeis            TipoPapeis[]            @relation("TipoPapeis_UserUpdated")
+  userCreatedPublicacoes           Publicacoes[]           @relation("Publicacoes_UserCreated")
+  userUpdatedPublicacoes           Publicacoes[]           @relation("Publicacoes_UserUpdated")
+  userCreatedAnexos                Anexos[]                @relation("Anexos_UserCreated")
+  userUpdatedAnexos                Anexos[]                @relation("Anexos_UserUpdated")
+  userCreatedPublicacaoAnexos     Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserCreated")
+  userUpdatedPublicacaoAnexos     Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserUpdated")
+}
+
+model Projetos {
+  id                Int                    @id @default(autoincrement())
+  titulo            String?
+  descricao         String?
+  dataInicio        DateTime?
+  dataTermino       DateTime?
+  coordenador       Usuarios?              @relation("Projetos_Usuarios", fields: [coordenadorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  coordenadorId     Int?
+  situacaoProjeto   TipoSituacoesProjetos? @relation("Projetos_TipoSituacoesProjetos", fields: [situacaoProjetoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoProjetoId Int?
+  tipoProjeto       TipoProjetos?          @relation("Projetos_TipoProjetos", fields: [tipoProjetoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoProjetoId     Int?
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("Projetos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("Projetos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("Projetos_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+  projetoUsuarios Projeto_Usuarios[] @relation("Projeto_Usuarios_Projetos")
+}
+
+model TipoSituacoesProjetos {
+  id   Int     @id @default(autoincrement())
+  nome String?
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("TipoSituacoesProjetos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("TipoSituacoesProjetos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("TipoSituacoesProjetos_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+  projetos Projetos[] @relation("Projetos_TipoSituacoesProjetos")
+}
+
+model TipoProjetos {
+  id   Int     @id @default(autoincrement())
+  nome String?
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("TipoProjetos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("TipoProjetos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("TipoProjetos_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+  projetos Projetos[] @relation("Projetos_TipoProjetos")
+}
+
+model Projeto_Usuarios {
+  id   Int     @id @default(autoincrement())
+  projeto Projetos @relation("Projeto_Usuarios_Projetos", fields: [projetoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  projetoId Int
+  usuario Usuarios @relation("Projeto_Usuarios_Usuarios", fields: [usuarioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarioId Int
+  dataEntrada DateTime?
+  dataSaida DateTime?
+  tipoVinculo TipoVinculos? @relation("Projeto_Usuarios_TipoVinculos", fields: [tipoVinculoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoVinculoId Int?
+  tipoPapel TipoPapeis? @relation("Projeto_Usuarios_TipoPapeis", fields: [tipoPapelId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoPapelId Int?
+  membroAtivo Boolean @default(true)
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("Projeto_Usuarios_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("Projeto_Usuarios_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("Projeto_Usuarios_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+}
+
+model TipoVinculos {
+  id   Int     @id @default(autoincrement())
+  nome String?
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("TipoVinculos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("TipoVinculos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("TipoVinculos_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+  projetoUsuarios Projeto_Usuarios[] @relation("Projeto_Usuarios_TipoVinculos")
+}
+
+model TipoPapeis {
+  id   Int     @id @default(autoincrement())
+  nome String?
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("TipoPapeis_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("TipoPapeis_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("TipoPapeis_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+  projetoUsuarios Projeto_Usuarios[] @relation("Projeto_Usuarios_TipoPapeis")
+}
+
+model Publicacoes {
+  id   Int     @id @default(autoincrement())
+  titulo String?
+  corpo String?
+  destaque Boolean @default(false)
+  capa String?
+  thumbnail String?
+  dataAgendamento DateTime?
+  visibilidade Int @default(0)
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("Publicacoes_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("Publicacoes_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("Publicacoes_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+  publicacaoAnexos Publicacao_Anexos[] @relation("Publicacao_Anexos_Publicacoes")
+}
+
+model Anexos {
+  id   Int     @id @default(autoincrement())
+  titulo String?
+  nomeArquivo String?
+  caminhoArquivo String?
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("Anexos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("Anexos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("Anexos_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
+  publicacaoAnexos Publicacao_Anexos[] @relation("Publicacao_Anexos_Anexos")
+}
+
+model Publicacao_Anexos {
+  id   Int     @id @default(autoincrement())
+  publicacao Publicacoes @relation("Publicacao_Anexos_Publicacoes", fields: [publicacaoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  publicacaoId Int
+  anexo Anexos @relation("Publicacao_Anexos_Anexos", fields: [anexoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  anexoId Int
+
+  // Esses sempre por último
+  situacaoCadastro   SituacaoCadastros? @relation("Publicacao_Anexos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  situacaoCadastroId Int?
+  createdAt          DateTime?          @default(now())
+  userCreated        Usuarios?          @relation("Publicacao_Anexos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userCreatedId      Int?
+  updatedAt          DateTime?          @updatedAt
+  userUpdated        Usuarios?          @relation("Publicacao_Anexos_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
+
+  // Relations
 }
