@@ -23,7 +23,7 @@ model SituacaoCadastros {
   projetos              Projetos[]              @relation("Projetos_SituacaoCadastros")
   tipoSituacoesProjetos TipoSituacoesProjetos[] @relation("TipoSituacoesProjetos_SituacaoCadastros")
   tipoProjetos          TipoProjetos[]          @relation("TipoProjetos_SituacaoCadastros")
-  projetoUsuarios       Projeto_Usuarios[]       @relation("Projeto_Usuarios_SituacaoCadastros")
+  projetoUsuarios       Projeto_Usuarios[]      @relation("Projeto_Usuarios_SituacaoCadastros")
   tipoVinulos           TipoVinculos[]          @relation("TipoVinculos_SituacaoCadastros")
   tipoPapeis            TipoPapeis[]            @relation("TipoPapeis_SituacaoCadastros")
   publicacoes           Publicacoes[]           @relation("Publicacoes_SituacaoCadastros")
@@ -58,7 +58,7 @@ model Usuarios {
   userUpdatedId      Int?
 
   // Relations
-  coordenadorProjetos Projetos[] @relation("Projetos_Usuarios")
+  coordenadorProjetos Projetos[]         @relation("Projetos_Usuarios")
   projetoUsuarios     Projeto_Usuarios[] @relation("Projeto_Usuarios_Usuarios")
 
   userCreatedUsuarios              Usuarios[]              @relation("Usuarios_UserCreated")
@@ -69,8 +69,8 @@ model Usuarios {
   userUpdatedTipoSituacoesProjetos TipoSituacoesProjetos[] @relation("TipoSituacoesProjetos_UserUpdated")
   userCreatedTipoProjetos          TipoProjetos[]          @relation("TipoProjetos_UserCreated")
   userUpdatedTipoProjetos          TipoProjetos[]          @relation("TipoProjetos_UserUpdated")
-  userCreatedProjetoUsuarios       Projeto_Usuarios[]       @relation("Projeto_Usuarios_UserCreated")
-  userUpdatedProjetoUsuarios       Projeto_Usuarios[]       @relation("Projeto_Usuarios_UserUpdated")
+  userCreatedProjetoUsuarios       Projeto_Usuarios[]      @relation("Projeto_Usuarios_UserCreated")
+  userUpdatedProjetoUsuarios       Projeto_Usuarios[]      @relation("Projeto_Usuarios_UserUpdated")
   userCreatedTipoVinculos          TipoVinculos[]          @relation("TipoVinculos_UserCreated")
   userUpdatedTipoVinculos          TipoVinculos[]          @relation("TipoVinculos_UserUpdated")
   userCreatedTipoPapeis            TipoPapeis[]            @relation("TipoPapeis_UserCreated")
@@ -79,8 +79,8 @@ model Usuarios {
   userUpdatedPublicacoes           Publicacoes[]           @relation("Publicacoes_UserUpdated")
   userCreatedAnexos                Anexos[]                @relation("Anexos_UserCreated")
   userUpdatedAnexos                Anexos[]                @relation("Anexos_UserUpdated")
-  userCreatedPublicacaoAnexos     Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserCreated")
-  userUpdatedPublicacaoAnexos     Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserUpdated")
+  userCreatedPublicacaoAnexos      Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserCreated")
+  userUpdatedPublicacaoAnexos      Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserUpdated")
 }
 
 model Projetos {
@@ -147,18 +147,18 @@ model TipoProjetos {
 }
 
 model Projeto_Usuarios {
-  id   Int     @id @default(autoincrement())
-  projeto Projetos @relation("Projeto_Usuarios_Projetos", fields: [projetoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  projetoId Int
-  usuario Usuarios @relation("Projeto_Usuarios_Usuarios", fields: [usuarioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  usuarioId Int
-  dataEntrada DateTime?
-  dataSaida DateTime?
-  tipoVinculo TipoVinculos? @relation("Projeto_Usuarios_TipoVinculos", fields: [tipoVinculoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id            Int           @id @default(autoincrement())
+  projeto       Projetos      @relation("Projeto_Usuarios_Projetos", fields: [projetoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  projetoId     Int
+  usuario       Usuarios      @relation("Projeto_Usuarios_Usuarios", fields: [usuarioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuarioId     Int
+  dataEntrada   DateTime?
+  dataSaida     DateTime?
+  tipoVinculo   TipoVinculos? @relation("Projeto_Usuarios_TipoVinculos", fields: [tipoVinculoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   tipoVinculoId Int?
-  tipoPapel TipoPapeis? @relation("Projeto_Usuarios_TipoPapeis", fields: [tipoPapelId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  tipoPapelId Int?
-  membroAtivo Boolean @default(true)
+  tipoPapel     TipoPapeis?   @relation("Projeto_Usuarios_TipoPapeis", fields: [tipoPapelId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tipoPapelId   Int?
+  membroAtivo   Boolean       @default(true)
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Projeto_Usuarios_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -210,14 +210,14 @@ model TipoPapeis {
 }
 
 model Publicacoes {
-  id   Int     @id @default(autoincrement())
-  titulo String?
-  corpo String?
-  destaque Boolean @default(false)
-  capa String?
-  thumbnail String?
+  id              Int       @id @default(autoincrement())
+  titulo          String?
+  corpo           String?
+  destaque        Boolean   @default(false)
+  capa            String?
+  thumbnail       String?
   dataAgendamento DateTime?
-  visibilidade Int @default(0)
+  visibilidade    Int       @default(0)
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Publicacoes_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -234,9 +234,9 @@ model Publicacoes {
 }
 
 model Anexos {
-  id   Int     @id @default(autoincrement())
-  titulo String?
-  nomeArquivo String?
+  id             Int     @id @default(autoincrement())
+  titulo         String?
+  nomeArquivo    String?
   caminhoArquivo String?
 
   // Esses sempre por último
@@ -254,11 +254,11 @@ model Anexos {
 }
 
 model Publicacao_Anexos {
-  id   Int     @id @default(autoincrement())
-  publicacao Publicacoes @relation("Publicacao_Anexos_Publicacoes", fields: [publicacaoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id           Int         @id @default(autoincrement())
+  publicacao   Publicacoes @relation("Publicacao_Anexos_Publicacoes", fields: [publicacaoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   publicacaoId Int
-  anexo Anexos @relation("Publicacao_Anexos_Anexos", fields: [anexoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  anexoId Int
+  anexo        Anexos      @relation("Publicacao_Anexos_Anexos", fields: [anexoId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  anexoId      Int
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Publicacao_Anexos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
