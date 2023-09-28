@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { prisma } from "~libs/prisma";
 import { auth } from "~modules/auth";
 import { cookie } from "@elysiajs/cookie";
 import { jwt } from "@elysiajs/jwt";
@@ -13,7 +14,7 @@ const app = new Elysia()
         })
       )
       .use(cookie())
-      .use(auth);
+      .use(auth)
   })
   .listen(2077);
 

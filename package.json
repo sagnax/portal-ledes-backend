@@ -9,7 +9,7 @@
     "@elysiajs/cookie": "^0.7.0",
     "@elysiajs/jwt": "^0.7.0",
     "@prisma/client": "^5.3.1",
-    "elysia": "latest"
+    "elysia": "^0.7.13"
   },
   "prisma": {
     "seed": "bun prisma/seed.ts"

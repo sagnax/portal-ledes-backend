@@ -10,7 +10,7 @@ async function verificaSenha(senha: string, senhaHash: string) {
 
 async function hashEmail(email: string) {
   const hasher = new Bun.CryptoHasher("sha256");
-  const emailHash = hasher.update(email).digest();
+  const emailHash = hasher.update(email).digest("hex");
   return emailHash;
 }
 

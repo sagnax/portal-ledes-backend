@@ -27,8 +27,8 @@ export const auth = (app: Elysia) => {
 
           // Faz o hash da senha e do e-mail
           const senhaHash = await hashSenha(senha);
-          const emailHash = await hashEmail(email);
-          const fotoURL = `https://www.gravatar.com/avatar/${emailHash}?d=identicon`;
+          const emailHash = await hashEmail(String(email).trim().toLowerCase());
+          const fotoURL = `https://www.gravatar.com/avatar/${emailHash}.jpg?d=identicon`;
 
           // Cria o usuário novo com as informações básicas
           const novoUsuario = await prisma.usuarios.create({
@@ -106,13 +106,11 @@ export const auth = (app: Elysia) => {
           })
         })
         .use(isAuthenticated)
-        .get("/me", async ({ user }) => {
+        .get("/me", async ({ success, message, data }) => {
           return {
-            success: true,
-            message: "Usuário encontrado",
-            data: {
-              user,
-            }
+            success: success,
+            message: message,
+            data: data,
           }
         });
     });

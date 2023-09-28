@@ -1,10 +1,10 @@
 import { Elysia } from "elysia";
 import { prisma } from "~libs/prisma";
 
-export const isAuthenticated = (app: Elysia) => 
-  app.derive(async ({ cookie, jwt, set }) => {
-    console.log(cookie);
-    if (!cookie!.token_acesso) {
+export const isAuthenticated = (app: Elysia) =>  {
+  return app.derive(async ({ cookie, jwt, set }) => {
+    if (!cookie.token_acesso) {
+      console.log("Não autorizado1");
       set.status = 401;
       return {
         success: false,
@@ -13,7 +13,7 @@ export const isAuthenticated = (app: Elysia) =>
       };
     }
 
-    const token = await jwt.verify(cookie!.token_acesso);
+    const token = await jwt.verify(cookie.token_acesso);
     if (!token) {
       set.status = 401;
       return {
@@ -34,8 +34,14 @@ export const isAuthenticated = (app: Elysia) =>
         data: null,
       };
     }
-
-    return {
-      user: usuario,
-    };
+    else {
+      return {
+        success: true,
+        message: "Usuário autenticado",
+        data: {
+          user: usuario,
+        }
+      }
+    }
   });
+};
