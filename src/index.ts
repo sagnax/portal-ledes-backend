@@ -1,21 +1,9 @@
 import { Elysia } from "elysia";
-import { prisma } from "~libs/prisma";
 import { auth } from "~modules/auth";
-import { cookie } from "@elysiajs/cookie";
-import { jwt } from "@elysiajs/jwt";
 
-const app = new Elysia()
-  .group("/api", (app) => {
-    return app
-      .use(
-        jwt({
-          name: "jwt",
-          secret: Bun.env.JWT_SECRET!,
-        })
-      )
-      .use(cookie())
-      .use(auth)
-  })
+const app = new Elysia({ prefix: "/api" })
+  .get("/", (context) => "API Ledes")
+  .use(auth)
   .listen(2077);
 
 console.log(

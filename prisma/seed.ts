@@ -17,6 +17,7 @@ async function main() {
     where: { email: "admin" },
     update: {},
     create: {
+      id: 1,
       nome: "Admin",
       email: "admin",
       senha: senhaAdmin,

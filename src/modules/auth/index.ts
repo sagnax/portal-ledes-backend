@@ -1,117 +1,119 @@
 import { Elysia, t } from "elysia";
 import { prisma } from "~libs/prisma";
-import { hashSenha, verificaSenha, hashEmail } from "~utils/hash";
-import { isAuthenticated } from "~middlewares/auth";
+import { hashSenha, verificaSenha, hashEmail } from "~utils/hash"
+import { auth as authMiddleware, getAuthUser } from "~middlewares/auth";
 
-export const auth = (app: Elysia) => {
-  return app
-    .group("/auth", (app) => {
-      return app
+export const auth = new Elysia({ prefix: "/auth" })
+    .use(authMiddleware)
+    .post("/login", async ({ body: { email, password }, set, jwt, setCookie }) => {
+      const usuario = await prisma.usuarios.findUnique({ where: { email } });
+      // se não existir o usuário
+      if (!usuario) {
+        set.status = 401;
+        return {
+          status: 401,
+          message: "Usuário e/ou senha incorretos.",
+          data: null
+        }
+      }
+      //! arrumar esses erros aqui.
+      const test = await prisma.usuarios.delete({ where: { id: 1 } })
+      const test2 = await prisma.usuarios.deleteMany({ where: { id: { in: [8, 9] } } })
+      // se encontrar, verifica a senha
+      const senhaCorreta = await verificaSenha(password, usuario.senha);
+      if (!senhaCorreta) {
+        set.status = 401;
+        return {
+          status: 401,
+          message: "Usuário e/ou senha incorretos.",
+          data: null
+        }
+      }
+      // se a senha estiver correta, cria o token
+      const token = await jwt.sign({ id: usuario.id.toString() });
+      // retorna o token
+      setCookie("authToken", token, { httpOnly: true, maxAge: 60 });
 
-        .post("/signup", async ({ body, set }) => {
-          const { email, senha } = body;
+      await prisma.$disconnect();
+      return {
+        status: 200,
+        message: "Login realizado com sucesso.",
+        data: {
+          token
+        }
+      }
+    },
+    {
+      body: t.Object({
+        email: t.String(),
+        password: t.String()
+      })
+    })
+    .onBeforeHandle(async ({ jwt, set, cookie }) => {
+      // pega o usuario pelo token
+      const usuario = await getAuthUser({ jwt, set, cookie });
+      if (!usuario) {
+        set.status = 401;
+        return {
+          status: 401,
+          message: "Unauthorized",
+          data: null
+        }
+      }
+    })
+    .post("/signup", async ({ body: { email, password }, set, cookie, jwt}) => {
+      // pega o usuario pelo token
+      const usuario = await getAuthUser({ jwt, set, cookie });
+      if (!usuario) {
+        set.status = 401;
+        return {
+          status: 401,
+          message: "Unauthorized",
+          data: null
+        }
+      }
+      // verifica se o usuario tem permissão de Admin ou Usuarios
+      if (!usuario.permissaoAdmin || !usuario.permissaoUsuarios) {
+        set.status = 403;
+        return {
+          status: 403,
+          message: "Forbidden",
+          data: null
+        }
+      }
+      // verifica se o email já existe
+      const novoUsuario = await prisma.usuarios.findUnique({ where: { email } });
+      if (novoUsuario) {
+        set.status = 409;
+        return {
+          status: 409,
+          message: "Usuário já existe.",
+          data: null
+        }
+      }
+      // cria o novo usuario
+      const hashedSenha = await hashSenha(password);
+      const hashedEmail = await hashEmail(email);
+      const gravatar = `https://www.gravatar.com/avatar/${hashedEmail}?d=identicon`;
+      const novoUsuarioCriado = await prisma.usuarios.create({
+        data: {
+          email,
+          senha: hashedSenha,
+          foto: gravatar
+        }
+      });
 
-          // Verifica se o usuário já existe
-          const usuarioExiste = await prisma.usuarios.findUnique({
-            where: { email },
-            select: { id: true },
-          });
-          if (usuarioExiste) {
-            set.status = 400;
-            return {
-              success: false,
-              message: "Usuário com esse e-mail já existe",
-              data: null,
-            }
-          }
-
-          // Faz o hash da senha e do e-mail
-          const senhaHash = await hashSenha(senha);
-          const emailHash = await hashEmail(String(email).trim().toLowerCase());
-          const fotoURL = `https://www.gravatar.com/avatar/${emailHash}.jpg?d=identicon`;
-
-          // Cria o usuário novo com as informações básicas
-          const novoUsuario = await prisma.usuarios.create({
-            data: {
-              email: email,
-              senha: senhaHash,
-              foto: fotoURL,
-            }
-          });
-
-          // Retorna o usuário criado
-          return {
-            success: true,
-            message: "Usuário criado com sucesso",
-            data: {
-              user: novoUsuario,
-            }
-          }
-        },
-          {
-            body: t.Object({
-              email: t.String(),
-              senha: t.String(),
-            })
-          })
-        .post("/login", async ({ body, set, jwt, setCookie }) => {
-          const { email, senha } = body;
-
-          // Verifica se o usuário existe
-          const usuario = await prisma.usuarios.findFirst({
-            where: { email },
-            select: { id: true, senha: true },
-          });
-          if (!usuario) {
-            set.status = 400;
-            return {
-              success: false,
-              message: "Usuário não existe",
-              data: null,
-            }
-          }
-
-          // Verifica se a senha está correta
-          const senhaCorreta = await verificaSenha(senha, usuario.senha);
-          if (!senhaCorreta) {
-            set.status = 400;
-            return {
-              success: false,
-              message: "Senha incorreta",
-              data: null,
-            }
-          }
-
-          // Gera o token JWT
-          const token = await jwt.sign({ id: usuario.id });
-
-          // Seta o cookie com o token
-          setCookie("token_acesso", token, {
-            maxAge: 60 * 60, // 1 hora
-            path: "/",
-          })
-
-          // Retorna o usuário
-          return {
-            success: true,
-            message: "Usuário logado com sucesso",
-            data: {
-              user: usuario,
-            }
-          }
-        }, {
-          body: t.Object({
-            email: t.String(),
-            senha: t.String(),
-          })
-        })
-        .use(isAuthenticated)
-        .get("/me", async ({ success, message, data }) => {
-          return {
-            success: success,
-            message: message,
-            data: data,
-          }
-        });
-    });
-};
+      await prisma.$disconnect();
+      // retorna o novo usuario
+      return {
+        status: 201,
+        message: "Usuário criado com sucesso.",
+        data: novoUsuarioCriado
+      }
+    },
+    {
+      body: t.Object({
+        email: t.String(),
+        password: t.String()
+      })
+    })

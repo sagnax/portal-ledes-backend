@@ -1,47 +1,25 @@
-import { Elysia } from "elysia";
+import Elysia from "elysia";
 import { prisma } from "~libs/prisma";
+import { cookie } from "@elysiajs/cookie";
+import { jwt } from "@elysiajs/jwt";
+import { Usuarios } from "@prisma/client";
 
-export const isAuthenticated = (app: Elysia) =>  {
-  return app.derive(async ({ cookie, jwt, set }) => {
-    if (!cookie.token_acesso) {
-      console.log("Não autorizado1");
-      set.status = 401;
-      return {
-        success: false,
-        message: "Não autorizado",
-        data: null,
-      };
-    }
+const auth = new Elysia()
+  .use(
+    jwt({
+      name: "jwt",
+      secret: Bun.env.JWT_SECRET!,
+    })
+  )
+  .use(cookie())
 
-    const token = await jwt.verify(cookie.token_acesso);
-    if (!token) {
-      set.status = 401;
-      return {
-        success: false,
-        message: "Não autorizado",
-        data: null,
-      };
+async function getAuthUser ({ jwt, cookie: { authToken } }: any) : Promise<Usuarios | null> {
+    const user = await jwt.verify(authToken);
+    if (!user) {
+      return null;
     }
+    const usuario = await prisma.usuarios.findFirst({ where: { id: parseInt(user.id) } });
+    return usuario as Usuarios;
+}
 
-    const usuario = await prisma.usuarios.findUnique({
-      where: { id: token.id },
-    });
-    if (!usuario) {
-      set.status = 401;
-      return {
-        success: false,
-        message: "Não autorizado",
-        data: null,
-      };
-    }
-    else {
-      return {
-        success: true,
-        message: "Usuário autenticado",
-        data: {
-          user: usuario,
-        }
-      }
-    }
-  });
-};
+export { auth, getAuthUser };
