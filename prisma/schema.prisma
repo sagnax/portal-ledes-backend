@@ -49,7 +49,7 @@ model Usuarios {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Usuarios_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("Usuarios_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -98,7 +98,7 @@ model Projetos {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Projetos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("Projetos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -116,7 +116,7 @@ model TipoSituacoesProjetos {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("TipoSituacoesProjetos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("TipoSituacoesProjetos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -134,7 +134,7 @@ model TipoProjetos {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("TipoProjetos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("TipoProjetos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -162,7 +162,7 @@ model Projeto_Usuarios {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Projeto_Usuarios_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("Projeto_Usuarios_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -179,7 +179,7 @@ model TipoVinculos {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("TipoVinculos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("TipoVinculos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -197,7 +197,7 @@ model TipoPapeis {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("TipoPapeis_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("TipoPapeis_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -221,7 +221,7 @@ model Publicacoes {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Publicacoes_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("Publicacoes_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -241,7 +241,7 @@ model Anexos {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Anexos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("Anexos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?
@@ -262,7 +262,7 @@ model Publicacao_Anexos {
 
   // Esses sempre por último
   situacaoCadastro   SituacaoCadastros? @relation("Publicacao_Anexos_SituacaoCadastros", fields: [situacaoCadastroId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  situacaoCadastroId Int?
+  situacaoCadastroId Int?               @default(1)
   createdAt          DateTime?          @default(now())
   userCreated        Usuarios?          @relation("Publicacao_Anexos_UserCreated", fields: [userCreatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   userCreatedId      Int?

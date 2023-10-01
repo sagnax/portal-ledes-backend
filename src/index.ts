@@ -1,9 +1,9 @@
 import { Elysia } from "elysia";
-import { auth } from "~modules/auth";
+import { authController } from "~modules/auth";
 
 const app = new Elysia({ prefix: "/api" })
   .get("/", (context) => "API Ledes")
-  .use(auth)
+  .use(authController)
   .listen(2077);
 
 console.log(

@@ -3,7 +3,7 @@ import { prisma } from "~libs/prisma";
 import { hashSenha, verificaSenha, hashEmail } from "~utils/hash"
 import { auth as authMiddleware, getAuthUser } from "~middlewares/auth";
 
-export const auth = new Elysia({ prefix: "/auth" })
+export const authController = new Elysia({ prefix: "/auth" })
     .use(authMiddleware)
     .post("/login", async ({ body: { email, password }, set, jwt, setCookie }) => {
       const usuario = await prisma.usuarios.findUnique({ where: { email } });
@@ -16,9 +16,9 @@ export const auth = new Elysia({ prefix: "/auth" })
           data: null
         }
       }
-      //! arrumar esses erros aqui.
-      const test = await prisma.usuarios.delete({ where: { id: 1 } })
-      const test2 = await prisma.usuarios.deleteMany({ where: { id: { in: [8, 9] } } })
+      
+      // const test = await prisma.usuarios.delete({ where: { id: 1 } })
+      // const test2 = await prisma.usuarios.deleteMany({ where: { id: { in: [8, 9] } } })
       // se encontrar, verifica a senha
       const senhaCorreta = await verificaSenha(password, usuario.senha);
       if (!senhaCorreta) {
