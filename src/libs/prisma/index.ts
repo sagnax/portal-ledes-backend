@@ -50,16 +50,50 @@ const prisma = new PrismaClient()
       /** updateManyWithAuthUser -> updateMany */
       async updateManyWithAuthUser<T> (this: T, args: Prisma.Args<T, "updateMany">["updateMany"], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
-        const dataToModify = [...(args.data)]; //! arrumar aqui
-        dataToModify.forEach((element:any, idx) => {
-          element = {
-            userCreatedId: authUser.id,
-            ...element
-          }
-          dataToModify[idx] = element;
-        }); 
-        args.data = dataToModify;
+        args.data = {
+          userUpdatedId: authUser.id,
+          ...args.data
+        }
         return await (context as any).updateMany(args);
+      },
+    }
+  }
+})
+// Find Extension
+.$extends({
+  name: "Find-FilteredBySituacaoCadastro",
+  model: {
+    $allModels: {
+      /** findFirstAtivo -> findFirst */
+      async findFirstAtivo<T> (this: T, args: Prisma.Args<T, "findFirst">["findFirst"]) : Promise<T> {
+        const context = Prisma.getExtensionContext(this);
+        args.where = {
+          situacaoCadastroId: 1,
+          ...args.where
+        }
+        return await (context as any).findFirst(args);
+      },
+      /** findUniqueAtivo -> findUnique */
+      async findUniqueAtivo<T> (this: T, args: Prisma.Args<T, "findUnique">["findUnique"]) : Promise<T> {
+        const context = Prisma.getExtensionContext(this);
+        args.where = {
+          situacaoCadastroId: 1,
+          ...args.where
+        }
+        return await (context as any).findUnique(args);
+      },
+      /** findManyAtivo -> findMany */
+      async findManyAtivo<T> (this: T, args: Prisma.Args<T, "findMany">["findMany"]) : Promise<T[]> {
+        const context = Prisma.getExtensionContext(this);
+        args.where = {
+          situacaoCadastroId: 1,
+          ...args.where
+        }
+        args.orderBy = {
+          id: 'asc',
+          ...args.orderBy
+        }
+        return await (context as any).findMany(args);
       },
     }
   }
@@ -102,79 +136,5 @@ const prisma = new PrismaClient()
     }
   }
 })
-// ! Criar a extensão de Created user id
-// ! Criar a extensão de Updated user id
-// ! Criar a extensão de Find situacao = 1
-// // Filtra Excluidos Extension
-// .$extends({
-//   name: "FiltraExcluidos",
-//   query: {
-//     $allModels: {
-//       async findUnique({ model, operation, args, query }) {
-//         args.where = {
-//           situacaoCadastroId: 1,
-//           ...args.where
-//         }
-//         return query(args);
-        
-//       },
-//       async findFirst({ model, operation, args, query }) {
-//         args.where = {
-//           situacaoCadastroId: 1,
-//           ...args.where
-//         }
-//         return query(args);
-//       },
-//     }
-//   }
-// })
-// // User Updated Id Extension
-// .$extends({
-//   name: "UserUpdatedId",
-//   query: {
-//     $allModels: {
-//       async update({ model, operation, args, query }) {
-//         args.data = {
-//           userUpdatedId: 1,
-//           ...args.data
-//         }
-//         args.where = {
-//           situacaoCadastroId: 1,
-//           ...args.where
-//         }
-//         return query(args);
-//       },
-//       async updateMany({ model, operation, args, query }) {
-//         args.where = {
-//           situacaoCadastroId: 1,
-//           ...args.where
-//         }
-//         return query(args);
-//       },
-//     }
-//   }
-// })
-// // User Created Id Extension
-// .$extends({
-//   name: "UserCreatedId",
-//   query: {
-//     $allModels: {
-//       async create({ model, operation, args, query }) {
-//         args.data = {
-//           situacaoCadastroId: 1,
-//           ...args.data
-//         }
-//         return query(args);
-//       },
-//       async createMany({ model, operation, args, query }) {
-//         args.data = {
-//           situacaoCadastroId: 1,
-//           ...args.data
-//         }
-//         return query(args);
-//       },
-//     }
-//   }
-// })
 
 export { prisma };

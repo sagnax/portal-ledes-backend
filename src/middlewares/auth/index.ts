@@ -3,7 +3,25 @@ import { prisma } from "~libs/prisma";
 import { cookie } from "@elysiajs/cookie";
 import { jwt } from "@elysiajs/jwt";
 import { Usuarios } from "@prisma/client";
-import { type } from "os";
+
+/**
+ * Tipos de permissões
+ * 
+ * ADMINISTRADOR: Permissão de Administrador
+ * 
+ * PROJETOS: Permissão de Projetos
+ * 
+ * PUBLICACOES: Permissão de Publicações
+ * 
+ * USUARIOS: Permissão de Usuários
+ */
+type Permissao = "ADMINISTRADOR" | "PROJETOS" | "PUBLICACOES" | "USUARIOS";
+
+type RetornoGetUsuarioLogadoEPermissão = {
+  status: number,
+  message: string,
+  data: Usuarios | null
+} 
 
 /**
  * Middleware de autenticação
@@ -28,22 +46,9 @@ async function getAuthUser ({ jwt, cookie: { authToken } }: any) : Promise<Usuar
     if (!user) {
       return null;
     }
-    const usuario = await prisma.usuarios.findFirst({ where: { id: parseInt(user.id) } });
-    return usuario as Usuarios;
+    const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
+    return usuario as unknown as Usuarios;
 }
-
-/**
- * Tipos de permissões
- * 
- * ADMINISTRADOR: Permissão de Administrador
- * 
- * PROJETOS: Permissão de Projetos
- * 
- * PUBLICACOES: Permissão de Publicações
- * 
- * USUARIOS: Permissão de Usuários
- */
-type Permissoes = "ADMINISTRADOR" | "PROJETOS" | "PUBLICACOES" | "USUARIOS";
 
 /**
  * Função que verifica se o usuário tem a permissão desejada
@@ -52,7 +57,7 @@ type Permissoes = "ADMINISTRADOR" | "PROJETOS" | "PUBLICACOES" | "USUARIOS";
  * @param idParaEditar id do usuario que se deseja editar
  * @returns true se o usuario tem a permissão, false se não tem
  */
-function verificaPermissaoUsuario (usuario: Usuarios, permissao: Permissoes, idParaEditar?: number) : boolean {
+function verificaPermissaoUsuario (usuario: Usuarios, permissao: Permissao, idParaEditarUsuario?: number) : boolean {
   // Verifica se tem permissão de Administrador
   // Apenas tendo a permisão de Administrador, já tem acesso a tudo
   // Se não tiver a permissão de Administrador, verifica se tem a permissão específica
@@ -68,7 +73,7 @@ function verificaPermissaoUsuario (usuario: Usuarios, permissao: Permissoes, idP
     return true;
   }
   // Verifica se tem permissão de Usuários ou se o usuário é o mesmo que está sendo editado
-  if ((usuario.permissaoUsuarios || usuario.id === idParaEditar) && permissao === "USUARIOS") {
+  if ((usuario.permissaoUsuarios || usuario.id === idParaEditarUsuario) && permissao === "USUARIOS") {
     return true;
   }
   // Se não tiver nenhuma permissão, retorna false
