@@ -89,12 +89,31 @@ const prisma = new PrismaClient()
           situacaoCadastroId: 1,
           ...args.where
         }
+        if (!args.orderBy) {
+          args.orderBy = {
+            id: 'asc',
+          }
+        }
+        return await (context as any).findMany(args);
+      },
+    }
+  }
+})
+// Find With Pagination Extension
+.$extends({
+  name: "Find-WithPagination",
+  model: {
+    $allModels: {
+      async findManyWithPagination<T> (this: T, args: Prisma.Args<T, "findMany">["findMany"], page: number, limit: number) : Promise<T[]> {
+        const context = Prisma.getExtensionContext(this);
+        args.skip = (page - 1) * limit;
+        args.take = limit;
         args.orderBy = {
           id: 'asc',
           ...args.orderBy
         }
         return await (context as any).findMany(args);
-      },
+      }
     }
   }
 })

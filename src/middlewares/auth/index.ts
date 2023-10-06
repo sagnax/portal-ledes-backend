@@ -54,7 +54,7 @@ async function getAuthUser ({ jwt, cookie: { authToken } }: any) : Promise<Usuar
  * Função que verifica se o usuário tem a permissão desejada
  * @param usuario usuario que está autenticado
  * @param permissao permisão que se deseja verificar
- * @param idParaEditar id do usuario que se deseja editar
+ * @param idParaEditarUsuario id do usuario que se deseja editar
  * @returns true se o usuario tem a permissão, false se não tem
  */
 function verificaPermissaoUsuario (usuario: Usuarios, permissao: Permissao, idParaEditarUsuario?: number) : boolean {

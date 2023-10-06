@@ -34,7 +34,7 @@ export const userController = new Elysia({ prefix: "/user" })
 
     // pega os dados do body
     const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
-    
+
     // verifica se o email já existe
     const novoUsuario = await prisma.usuarios.findUnique({ where: { email } });
     if (novoUsuario) {
@@ -109,7 +109,7 @@ export const userController = new Elysia({ prefix: "/user" })
     }
   )
 
-  .post("/edit/:id", async ({ params, body, set, cookie, jwt }) => {
+  .patch("/edit/:id", async ({ params, body, set, cookie, jwt }) => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, set, cookie });
     if (!usuario) {
@@ -133,10 +133,10 @@ export const userController = new Elysia({ prefix: "/user" })
 
     // pega os dados do body
     const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
-    
+
     // verifica se o id existe
-    const novoUsuario = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
-    if (!novoUsuario) {
+    const usuarioParaEditar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!usuarioParaEditar) {
       set.status = 404;
       return {
         status: 404,
@@ -210,3 +210,107 @@ export const userController = new Elysia({ prefix: "/user" })
       })
     }
   )
+
+  // TODO: terminar o delete
+  .delete("/delete/:id", async ({ params, body, set, cookie, jwt }) => {
+    // pega o usuario pelo token
+    const usuario = await getAuthUser({ jwt, set, cookie });
+    if (!usuario) {
+      set.status = 401;
+      return {
+        status: 401,
+        message: "Unauthorized",
+        data: null
+      }
+    }
+    // verifica se o usuario tem permissão de Admin ou Usuarios ou se é o mesmo usuario que está sendo editado
+    const temPermissao = verificaPermissaoUsuario(usuario, "USUARIOS");
+    if (!temPermissao) {
+      set.status = 403;
+      return {
+        status: 403,
+        message: "Forbidden",
+        data: null
+      }
+    }
+
+    // verifica se o id existe
+    const usuarioParaDeletar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!usuarioParaDeletar) {
+      set.status = 404;
+      return {
+        status: 404,
+        message: "Usuário não existe.",
+        data: null
+      }
+    }
+
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
+
+    // retorna o novo usuario
+    return {
+      status: 200,
+      message: "Usuário editado com sucesso.",
+      data: null
+    }
+  })
+
+  // TODO: terminar o list com parametros
+  .get("/list", async () => {
+    // pega todos os usuarios
+    const usuarios = await prisma.usuarios.findManyAtivo({ 
+      select : {
+        id: true,
+        nome: true,
+        sobrenome: true,
+        linkedin: true,
+        github: true,
+        curso: true,
+        funcao: true,
+        foto: true,
+      },
+      orderBy: { 
+        nome: "asc" 
+      } 
+    });
+
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
+
+    // retorna os usuarios
+    return {
+      status: 200,
+      message: "Usuários encontrados.",
+      data: usuarios
+    }
+  })
+
+  .get("/view/:id", async ({ params }) => {
+    // pega todos os usuarios
+    const usuarios = await prisma.usuarios.findUniqueAtivo({ 
+      select : {
+        id: true,
+        nome: true,
+        sobrenome: true,
+        linkedin: true,
+        github: true,
+        curso: true,
+        funcao: true,
+        foto: true,
+      },
+      where: {
+        id: parseInt(params.id)
+      }
+    });
+
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
+
+    // retorna os usuarios
+    return {
+      status: 200,
+      message: "Usuários encontrados.",
+      data: usuarios
+    }
+  })

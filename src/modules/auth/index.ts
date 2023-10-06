@@ -45,7 +45,15 @@ export const authController = new Elysia({ prefix: "/auth" })
       status: 200,
       message: "Login realizado com sucesso.",
       data: {
-        token
+        token,
+        id: usuario.id,
+        nome: usuario.nome,
+        sobrenome: usuario.sobrenome,
+        email: usuario.email,
+        permissaoAdmin: usuario.permissaoAdmin,
+        permissaoProjetos: usuario.permissaoProjetos,
+        permissaoPublicacoes: usuario.permissaoPublicacoes,
+        permissaoUsuarios: usuario.permissaoUsuarios,
       }
     }
   },
