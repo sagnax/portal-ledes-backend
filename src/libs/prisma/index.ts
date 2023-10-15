@@ -1,13 +1,13 @@
-import { Prisma, PrismaClient, Usuarios } from "@prisma/client";
+import { Prisma, PrismaClient, Usuarios } from '@prisma/client';
 
 const prisma = new PrismaClient()
 // Create Extension
 .$extends({
-  name: "Create-WithAuthenticatedUser",
+  name: 'Create-WithAuthenticatedUser',
   model: {
     $allModels: {
       /** createWithAuthUser -> create */
-      async createWithAuthUser<T> (this: T, args: Prisma.Args<T, "create">["create"], authUser: Usuarios) : Promise<T> {
+      async createWithAuthUser<T> (this: T, args: Prisma.Args<T, 'create'>['create'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.data = {
           userCreatedId: authUser.id,
@@ -16,7 +16,7 @@ const prisma = new PrismaClient()
         return await (context as any).create(args);
       },
       /** createManyWithAuthUser -> createMany */
-      async createManyWithAuthUser<T> (this: T, args: Prisma.Args<T, "createMany">["createMany"], authUser: Usuarios) : Promise<T> {
+      async createManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'createMany'>['createMany'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const dataToModify = [...args.data];
 
@@ -35,11 +35,11 @@ const prisma = new PrismaClient()
 })
 // Update Extension
 .$extends({
-  name: "Update-WithAuthenticatedUser",
+  name: 'Update-WithAuthenticatedUser',
   model: {
     $allModels: {
       /** updateWithAuthUser -> update */
-      async updateWithAuthUser<T> (this: T, args: Prisma.Args<T, "update">["update"], authUser: Usuarios) : Promise<T> {
+      async updateWithAuthUser<T> (this: T, args: Prisma.Args<T, 'update'>['update'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.data = {
           userUpdatedId: authUser.id,
@@ -48,7 +48,7 @@ const prisma = new PrismaClient()
         return await (context as any).update(args);
       },
       /** updateManyWithAuthUser -> updateMany */
-      async updateManyWithAuthUser<T> (this: T, args: Prisma.Args<T, "updateMany">["updateMany"], authUser: Usuarios) : Promise<T> {
+      async updateManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'updateMany'>['updateMany'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.data = {
           userUpdatedId: authUser.id,
@@ -61,11 +61,11 @@ const prisma = new PrismaClient()
 })
 // Find Extension
 .$extends({
-  name: "Find-FilteredBySituacaoCadastro",
+  name: 'Find-FilteredBySituacaoCadastro',
   model: {
     $allModels: {
       /** findFirstAtivo -> findFirst */
-      async findFirstAtivo<T> (this: T, args: Prisma.Args<T, "findFirst">["findFirst"]) : Promise<T> {
+      async findFirstAtivo<T> (this: T, args: Prisma.Args<T, 'findFirst'>['findFirst']) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.where = {
           situacaoCadastroId: 1,
@@ -74,7 +74,7 @@ const prisma = new PrismaClient()
         return await (context as any).findFirst(args);
       },
       /** findUniqueAtivo -> findUnique */
-      async findUniqueAtivo<T> (this: T, args: Prisma.Args<T, "findUnique">["findUnique"]) : Promise<T> {
+      async findUniqueAtivo<T> (this: T, args: Prisma.Args<T, 'findUnique'>['findUnique']) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.where = {
           situacaoCadastroId: 1,
@@ -83,7 +83,7 @@ const prisma = new PrismaClient()
         return await (context as any).findUnique(args);
       },
       /** findManyAtivo -> findMany */
-      async findManyAtivo<T> (this: T, args: Prisma.Args<T, "findMany">["findMany"]) : Promise<T[]> {
+      async findManyAtivo<T> (this: T, args: Prisma.Args<T, 'findMany'>['findMany']) : Promise<T[]> {
         const context = Prisma.getExtensionContext(this);
         args.where = {
           situacaoCadastroId: 1,
@@ -101,10 +101,10 @@ const prisma = new PrismaClient()
 })
 // Find With Pagination Extension
 .$extends({
-  name: "Find-WithPagination",
+  name: 'Find-WithPagination',
   model: {
     $allModels: {
-      async findManyWithPagination<T> (this: T, args: Prisma.Args<T, "findMany">["findMany"], page: number, limit: number) : Promise<T[]> {
+      async findManyWithPagination<T> (this: T, args: Prisma.Args<T, 'findMany'>['findMany'], page: number, limit: number) : Promise<T[]> {
         const context = Prisma.getExtensionContext(this);
         args.skip = (page - 1) * limit;
         args.take = limit;
@@ -119,10 +119,10 @@ const prisma = new PrismaClient()
 })
 // Soft Delete Extension
 .$extends({
-  name: "SoftDelete",
+  name: 'SoftDelete',
   model: {
     $allModels: {
-      async delete<T> (this: T, args: Prisma.Args<T, "delete">["delete"]) : Promise<T> {
+      async delete<T> (this: T, args: Prisma.Args<T, 'delete'>['delete']) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const data = {
           situacaoCadastroId: 2,
@@ -137,7 +137,7 @@ const prisma = new PrismaClient()
         }
         return await (context as any).update({data, where});
       },
-      async deleteMany<T> (this: T, args: Prisma.Args<T, "deleteMany">["deleteMany"]) : Promise<T> {
+      async deleteMany<T> (this: T, args: Prisma.Args<T, 'deleteMany'>['deleteMany']) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const data = {
           situacaoCadastroId: 2,

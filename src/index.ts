@@ -1,24 +1,53 @@
-import { Elysia } from "elysia";
-import { authController } from "~modules/auth";
-import { userController } from "~modules/user";
+import { Elysia } from 'elysia';
+import { swagger } from '@elysiajs/swagger'
+import { swaggerConfig } from '~utils/swagger';
+import { authController } from '~modules/auth';
+import { userController } from '~modules/user';
 
-const app = new Elysia({ prefix: "/api" })
+
+const app = new Elysia({ prefix: '/api' })
+  // Tratamento de erros
   .onError((context) => {
     console.log(context.error);
+
+    let message = 'Error';
     if ('status' in context.error) {
       context.set.status = context.error.status;
+      message = context.error.message;
     } else {
       context.set.status = 500;
+      message = 'Internal Server Error';
     }
     return {
       status: context.set.status,
-      message: "Error",
+      message: message,
       data: null,
     }
   })
-  .get("/", (context) => "API Ledes")
+
+  // Documentação da Api
+  .use(swagger(swaggerConfig))
+
+  // Entrada da Api
+  .get('/', () => 'API Ledes', {
+    // Documentação Swagger
+    detail: { 
+      tags: ['Home'],
+      summary: 'Entrada da API',
+      description: 'Retorna a mensagem de entrada da API.',
+      responses: {
+        200: { 
+          description: 'OK' 
+        }
+      },
+    } 
+  })
+
+  // Controladores das rotas
   .use(authController)
   .use(userController)
+
+  // Inicia o servidor
   .listen(2077);
 
 console.log(

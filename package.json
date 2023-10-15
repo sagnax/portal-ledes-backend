@@ -8,6 +8,7 @@
   "dependencies": {
     "@elysiajs/cookie": "^0.7.0",
     "@elysiajs/jwt": "^0.7.0",
+    "@elysiajs/swagger": "^0.7.3",
     "@prisma/client": "^5.3.1",
     "elysia": "^0.7.13"
   },

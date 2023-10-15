@@ -1,23 +1,23 @@
-import { Elysia, t } from "elysia";
-import { prisma } from "~libs/prisma";
-import { hashSenha, verificaSenha, hashEmail } from "~utils/hash"
-import { auth as authMiddleware, getAuthUser, verificaPermissaoUsuario } from "~middlewares/auth";
+import { Elysia, t } from 'elysia';
+import { prisma } from '~libs/prisma';
+import { hashSenha, verificaSenha, hashEmail } from '~utils/hash'
+import { auth as authMiddleware, getAuthUser, verificaPermissaoUsuario } from '~middlewares/auth';
 
 /**
  * Controller de autenticação
  */
-export const authController = new Elysia({ prefix: "/auth" })
+export const authController = new Elysia({ prefix: '/auth' })
 
   .use(authMiddleware)
 
-  .post("/login", async ({ body: { email, password }, set, jwt, setCookie }) => {
+  .post('/login', async ({ body: { email, password }, set, jwt, setCookie }) => {
     const usuario = await prisma.usuarios.findUnique({ where: { email } });
     // se não existir o usuário
     if (!usuario) {
       set.status = 401;
       return {
         status: 401,
-        message: "Usuário e/ou senha incorretos.",
+        message: 'Usuário e/ou senha incorretos.',
         data: null
       }
     }
@@ -28,22 +28,22 @@ export const authController = new Elysia({ prefix: "/auth" })
       set.status = 401;
       return {
         status: 401,
-        message: "Usuário e/ou senha incorretos.",
+        message: 'Usuário e/ou senha incorretos.',
         data: null
       }
     }
     // se a senha estiver correta, cria o token
     const token = await jwt.sign({ id: usuario.id.toString() });
     // seta o token no cookie
-    setCookie("authToken", token, { httpOnly: true, maxAge: 60 * 10 });
-
+    setCookie('authToken', token, { httpOnly: true, maxAge: 60 * 10, sameSite: 'lax', secure: true });
+    
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
-
+    
     // retorna o token
     return {
       status: 200,
-      message: "Login realizado com sucesso.",
+      message: 'Login realizado com sucesso.',
       data: {
         token,
         id: usuario.id,
@@ -63,22 +63,22 @@ export const authController = new Elysia({ prefix: "/auth" })
         password: t.String()
       })
     }
-  )
-
-  .get("/logout", async ({ set, jwt, setCookie, cookie }) => {
+    )
+    
+  .get('/logout', async ({ set, jwt, setCookie, cookie }) => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, set, cookie });
     if (!usuario) {
       set.status = 401;
       return {
         status: 401,
-        message: "Unauthorized",
+        message: 'Unauthorized',
         data: null
       }
     }
 
     // limpa o token do cookie
-    setCookie("authToken", "");
+    setCookie('authToken', '');
 
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
@@ -86,7 +86,7 @@ export const authController = new Elysia({ prefix: "/auth" })
     // retorna o token
     return {
       status: 200,
-      message: "Logout realizado com sucesso.",
+      message: 'Logout realizado com sucesso.',
       data: null
     }
   })

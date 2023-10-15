@@ -1,33 +1,33 @@
-import { Elysia, t } from "elysia";
-import { prisma } from "~libs/prisma";
-import { hashSenha, verificaSenha, hashEmail } from "~utils/hash"
-import { auth as authMiddleware, getAuthUser, verificaPermissaoUsuario } from "~middlewares/auth";
+import { Elysia, t } from 'elysia';
+import { prisma } from '~libs/prisma';
+import { hashSenha, verificaSenha, hashEmail } from '~utils/hash'
+import { auth as authMiddleware, getAuthUser, verificaPermissaoUsuario } from '~middlewares/auth';
 
 /**
  * Controller de usuário
  */
-export const userController = new Elysia({ prefix: "/user" })
+export const userController = new Elysia({ prefix: '/user' })
 
   .use(authMiddleware)
 
-  .post("/add", async ({ body, set, cookie, jwt }) => {
+  .post('/add', async ({ body, set, cookie, jwt }) => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, set, cookie });
     if (!usuario) {
       set.status = 401;
       return {
         status: 401,
-        message: "Unauthorized",
+        message: 'Unauthorized',
         data: null
       }
     }
     // verifica se o usuario tem permissão de Admin ou Usuarios
-    const temPermissao = verificaPermissaoUsuario(usuario, "USUARIOS");
+    const temPermissao = verificaPermissaoUsuario(usuario, 'USUARIOS');
     if (!temPermissao) {
       set.status = 403;
       return {
         status: 403,
-        message: "Forbidden",
+        message: 'Forbidden',
         data: null
       }
     }
@@ -41,13 +41,13 @@ export const userController = new Elysia({ prefix: "/user" })
       set.status = 409;
       return {
         status: 409,
-        message: "Usuário já existe.",
+        message: 'Usuário já existe.',
         data: null
       }
     }
 
     // salva a foto no servidor
-    let fotoPath = "";
+    let fotoPath = '';
     if (foto) {
       fotoPath = `./public/uploads/img/usuarios/${email}/${foto.name}`;
       const fotoBuffer = await foto.arrayBuffer();
@@ -86,7 +86,7 @@ export const userController = new Elysia({ prefix: "/user" })
     // retorna o novo usuario
     return {
       status: 201,
-      message: "Usuário criado com sucesso.",
+      message: 'Usuário criado com sucesso.',
       data: novoUsuarioCriado
     }
   },
@@ -100,7 +100,7 @@ export const userController = new Elysia({ prefix: "/user" })
         github: t.Optional(t.String()),
         curso: t.Optional(t.String()),
         funcao: t.Optional(t.Integer()),
-        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ["image/png", "image/jpg", "image/jpeg"] })),
+        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
         permissaoAdmin: t.Optional(t.Boolean()),
         permissaoProjetos: t.Optional(t.Boolean()),
         permissaoPublicacoes: t.Optional(t.Boolean()),
@@ -109,24 +109,24 @@ export const userController = new Elysia({ prefix: "/user" })
     }
   )
 
-  .patch("/edit/:id", async ({ params, body, set, cookie, jwt }) => {
+  .patch('/edit/:id', async ({ params, body, set, cookie, jwt }) => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, set, cookie });
     if (!usuario) {
       set.status = 401;
       return {
         status: 401,
-        message: "Unauthorized",
+        message: 'Unauthorized',
         data: null
       }
     }
     // verifica se o usuario tem permissão de Admin ou Usuarios ou se é o mesmo usuario que está sendo editado
-    const temPermissao = verificaPermissaoUsuario(usuario, "USUARIOS", parseInt(params.id));
+    const temPermissao = verificaPermissaoUsuario(usuario, 'USUARIOS', parseInt(params.id));
     if (!temPermissao) {
       set.status = 403;
       return {
         status: 403,
-        message: "Forbidden",
+        message: 'Forbidden',
         data: null
       }
     }
@@ -140,13 +140,13 @@ export const userController = new Elysia({ prefix: "/user" })
       set.status = 404;
       return {
         status: 404,
-        message: "Usuário não existe.",
+        message: 'Usuário não existe.',
         data: null
       }
     }
 
     // salva a foto no servidor
-    let fotoPath = "";
+    let fotoPath = '';
     if (foto) {
       fotoPath = `./public/uploads/img/usuarios/${email}/${foto.name}`;
       const fotoBuffer = await foto.arrayBuffer();
@@ -188,7 +188,7 @@ export const userController = new Elysia({ prefix: "/user" })
     // retorna o novo usuario
     return {
       status: 200,
-      message: "Usuário editado com sucesso.",
+      message: 'Usuário editado com sucesso.',
       data: usuarioEditado
     }
   },
@@ -202,7 +202,7 @@ export const userController = new Elysia({ prefix: "/user" })
         github: t.Optional(t.String()),
         curso: t.Optional(t.String()),
         funcao: t.Optional(t.Integer()),
-        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ["image/png", "image/jpg", "image/jpeg"] })),
+        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
         permissaoAdmin: t.Optional(t.Boolean()),
         permissaoProjetos: t.Optional(t.Boolean()),
         permissaoPublicacoes: t.Optional(t.Boolean()),
@@ -212,24 +212,24 @@ export const userController = new Elysia({ prefix: "/user" })
   )
 
   // TODO: terminar o delete
-  .delete("/delete/:id", async ({ params, body, set, cookie, jwt }) => {
+  .delete('/delete/:id', async ({ params, body, set, cookie, jwt }) => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, set, cookie });
     if (!usuario) {
       set.status = 401;
       return {
         status: 401,
-        message: "Unauthorized",
+        message: 'Unauthorized',
         data: null
       }
     }
     // verifica se o usuario tem permissão de Admin ou Usuarios ou se é o mesmo usuario que está sendo editado
-    const temPermissao = verificaPermissaoUsuario(usuario, "USUARIOS");
+    const temPermissao = verificaPermissaoUsuario(usuario, 'USUARIOS');
     if (!temPermissao) {
       set.status = 403;
       return {
         status: 403,
-        message: "Forbidden",
+        message: 'Forbidden',
         data: null
       }
     }
@@ -240,7 +240,7 @@ export const userController = new Elysia({ prefix: "/user" })
       set.status = 404;
       return {
         status: 404,
-        message: "Usuário não existe.",
+        message: 'Usuário não existe.',
         data: null
       }
     }
@@ -251,13 +251,13 @@ export const userController = new Elysia({ prefix: "/user" })
     // retorna o novo usuario
     return {
       status: 200,
-      message: "Usuário editado com sucesso.",
+      message: 'Usuário editado com sucesso.',
       data: null
     }
   })
 
   // TODO: terminar o list com parametros
-  .get("/list", async () => {
+  .get('/list', async () => {
     // pega todos os usuarios
     const usuarios = await prisma.usuarios.findManyAtivo({ 
       select : {
@@ -271,7 +271,7 @@ export const userController = new Elysia({ prefix: "/user" })
         foto: true,
       },
       orderBy: { 
-        nome: "asc" 
+        nome: 'asc' 
       } 
     });
 
@@ -281,12 +281,12 @@ export const userController = new Elysia({ prefix: "/user" })
     // retorna os usuarios
     return {
       status: 200,
-      message: "Usuários encontrados.",
+      message: 'Usuários encontrados.',
       data: usuarios
     }
   })
 
-  .get("/view/:id", async ({ params }) => {
+  .get('/view/:id', async ({ params }) => {
     // pega todos os usuarios
     const usuarios = await prisma.usuarios.findUniqueAtivo({ 
       select : {
@@ -310,7 +310,7 @@ export const userController = new Elysia({ prefix: "/user" })
     // retorna os usuarios
     return {
       status: 200,
-      message: "Usuários encontrados.",
+      message: 'Usuários encontrados.',
       data: usuarios
     }
   })

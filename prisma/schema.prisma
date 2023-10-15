@@ -59,6 +59,7 @@ model Usuarios {
 
   // Relations
   coordenadorProjetos Projetos[]         @relation("Projetos_Usuarios")
+  coordenadorLaboratorio ConfiguracaoSobreNos[] @relation("ConfiguracaoSobreNos_Usuarios")
   projetoUsuarios     Projeto_Usuarios[] @relation("Projeto_Usuarios_Usuarios")
 
   userCreatedUsuarios              Usuarios[]              @relation("Usuarios_UserCreated")
@@ -81,6 +82,7 @@ model Usuarios {
   userUpdatedAnexos                Anexos[]                @relation("Anexos_UserUpdated")
   userCreatedPublicacaoAnexos      Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserCreated")
   userUpdatedPublicacaoAnexos      Publicacao_Anexos[]     @relation("Publicacao_Anexos_UserUpdated")
+  userUpdatedConfiguracaoSobreNos      ConfiguracaoSobreNos[]     @relation("ConfiguracaoSobreNos_UserUpdated")
 }
 
 model Projetos {
@@ -271,4 +273,44 @@ model Publicacao_Anexos {
   userUpdatedId      Int?
 
   // Relations
+}
+
+model ConfiguracaoSobreNos {
+  id   Int    @id @default(1)
+  descricao String?
+  endereco String?
+  coordenadorLaboratorio Usuarios? @relation("ConfiguracaoSobreNos_Usuarios", fields: [coordenadorLaboratorioId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  coordenadorLaboratorioId Int?
+  emailCoordenador String?
+  telefoneLaboratorio String?
+  
+  // Horários de funcionamento
+  segundaLaboratorioAbre Boolean @default(true)
+  horarioSegundaAbertura DateTime?
+  horarioSegundaFechamento DateTime?
+  tercaLaboratorioAbre Boolean @default(true)
+  horarioTercaAbertura DateTime?
+  horarioTercaFechamento DateTime?
+  quartaLaboratorioAbre Boolean @default(true)
+  horarioQuartaAbertura DateTime?
+  horarioQuartaFechamento DateTime?
+  quintaLaboratorioAbre Boolean @default(true)
+  horarioQuintaAbertura DateTime?
+  horarioQuintaFechamento DateTime?
+  sextaLaboratorioAbre Boolean @default(true)
+  horarioSextaAbertura DateTime?
+  horarioSextaFechamento DateTime?
+  sabadoLaboratorioAbre Boolean @default(true)
+  horarioSabadoAbertura DateTime?
+  horarioSabadoFechamento DateTime?
+  domingoLaboratorioAbre Boolean @default(true)
+  horarioDomingoAbertura DateTime?
+  horarioDomingoFechamento DateTime?
+  
+
+  // Esses sempre por último
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  userUpdated        Usuarios?          @relation("ConfiguracaoSobreNos_UserUpdated", fields: [userUpdatedId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userUpdatedId      Int?
 }
