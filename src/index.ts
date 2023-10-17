@@ -6,6 +6,11 @@ import { userController } from '~modules/user';
 
 
 const app = new Elysia({ prefix: '/api' })
+  // Log de todas as requisições
+  .onRequest((context) => {
+    console.log(`${context.request.method} - ${context.request.url}`);
+  })
+  
   // Tratamento de erros
   .onError((context) => {
     console.log(context.error);
@@ -37,8 +42,16 @@ const app = new Elysia({ prefix: '/api' })
       description: 'Retorna a mensagem de entrada da API.',
       responses: {
         200: { 
-          description: 'OK' 
-        }
+          description: 'OK',
+          content: {
+            'text/plain': {
+              schema: {
+                type: 'string',
+                example: 'API Ledes'
+              }
+            }
+          }
+        },
       },
     } 
   })

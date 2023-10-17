@@ -1,40 +1,46 @@
-import Elysia from 'elysia';
-import { prisma } from '~libs/prisma';
-import { cookie } from '@elysiajs/cookie';
-import { jwt } from '@elysiajs/jwt';
-import { Usuarios } from '@prisma/client';
+import Elysia from "elysia";
+import { prisma } from "~libs/prisma";
+import { cookie } from "@elysiajs/cookie";
+import { jwt } from "@elysiajs/jwt";
+import { Usuarios } from "@prisma/client";
+import { nextTick } from "process";
 
 /**
- * Tipos de permissões
+ * Tipos de permissões.
  * 
- * ADMINISTRADOR: Permissão de Administrador
+ * ADMINISTRADOR: Permissão de Administrador.
  * 
- * PROJETOS: Permissão de Projetos
+ * PROJETOS: Permissão de Projetos.
  * 
- * PUBLICACOES: Permissão de Publicações
+ * PUBLICACOES: Permissão de Publicações.
  * 
- * USUARIOS: Permissão de Usuários
+ * USUARIOS: Permissão de Usuários.
  */
-type Permissao = 'ADMINISTRADOR' | 'PROJETOS' | 'PUBLICACOES' | 'USUARIOS';
+type Permissao = "ADMINISTRADOR" | "PROJETOS" | "PUBLICACOES" | "USUARIOS";
 
 /**
  * Middleware de autenticação
  * com o jwt e cookie
  */
 const auth = new Elysia()
+  // Middleware do Elysia de JWT
   .use(
     jwt({
-      name: 'jwt',
+      name: "jwt",
       secret: Bun.env.JWT_SECRET!,
     })
   )
+  // Middleware do Elysia de Cookie
   .use(cookie())
-  // .decorate()
+  /** Método para buscar o usuário autenticado */
+  .decorate('getAuthUser', (context: any) => {
+    return getAuthUser(context);
+  });
 
 /**
- * Função que verifica se o usuário está autenticado e retorna o usuário
- * @param param0 { jwt, cookie: { authToken } } jwt e cookie para verificar o usuário
- * @returns usuário autenticado ou nulo caso não esteja autenticado
+ * Função que retorna o usuário autenticado.
+ * @param context - { jwt, cookie: { authToken } } - jwt e cookie para verificar o usuário.
+ * @returns usuário autenticado ou nulo caso não esteja autenticado.
  */
 async function getAuthUser ({ jwt, cookie: { authToken } }: any) : Promise<Usuarios | null> {
     const user = await jwt.verify(authToken);
@@ -44,6 +50,33 @@ async function getAuthUser ({ jwt, cookie: { authToken } }: any) : Promise<Usuar
     const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
     return usuario as unknown as Usuarios;
 }
+
+/**
+ * Função para o beforeHandle para verificar se o usuário está autenticado.
+ * @param context - { jwt, cookie: { authToken } } - jwt e cookie para verificar o usuário.
+ * @returns Retorna um objeto com o status, message e data caso o usuário não esteja autenticado
+ * ou continua o fluxo caso o usuário esteja autenticado.
+ */
+async function verificaAuthUser ({ set, jwt, cookie: { authToken } }: any) : Promise<APIResponse | void> {
+  const user = await jwt.verify(authToken);
+  if (!user) {
+    set.status = 401;
+    return {
+      status: 401,
+      message: 'Token inválido',
+      data: null
+    };
+  }
+  const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
+  if (!usuario) {
+    set.status = 401;
+    return {
+      status: 401,
+      message: 'Usuário não existe',
+      data: null
+    };
+  }
+} 
 
 /**
  * Função que verifica se o usuário tem a permissão desejada
@@ -56,19 +89,19 @@ function verificaPermissaoUsuario (usuario: Usuarios, permissao: Permissao, idPa
   // Verifica se tem permissão de Administrador
   // Apenas tendo a permisão de Administrador, já tem acesso a tudo
   // Se não tiver a permissão de Administrador, verifica se tem a permissão específica
-  if (usuario.permissaoAdmin || (usuario.permissaoAdmin && permissao === 'ADMINISTRADOR')) {
+  if (usuario.permissaoAdmin || (usuario.permissaoAdmin && permissao === "ADMINISTRADOR")) {
     return true;
   }
   // Verifica se tem permissão de Projetos
-  if (usuario.permissaoProjetos && permissao === 'PROJETOS') {
+  if (usuario.permissaoProjetos && permissao === "PROJETOS") {
     return true;
   }
   // Verifica se tem permissão de Publicações
-  if (usuario.permissaoPublicacoes && permissao === 'PUBLICACOES') {
+  if (usuario.permissaoPublicacoes && permissao === "PUBLICACOES") {
     return true;
   }
   // Verifica se tem permissão de Usuários ou se o usuário é o mesmo que está sendo editado
-  if ((usuario.permissaoUsuarios || usuario.id === idParaEditarUsuario) && permissao === 'USUARIOS') {
+  if ((usuario.permissaoUsuarios || usuario.id === idParaEditarUsuario) && permissao === "USUARIOS") {
     return true;
   }
   // Se não tiver nenhuma permissão, retorna false
@@ -77,4 +110,4 @@ function verificaPermissaoUsuario (usuario: Usuarios, permissao: Permissao, idPa
   }
 }
 
-export { auth, getAuthUser, verificaPermissaoUsuario };
+export { auth, verificaAuthUser, verificaPermissaoUsuario };

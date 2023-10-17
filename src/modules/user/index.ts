@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { prisma } from '~libs/prisma';
 import { hashSenha, verificaSenha, hashEmail } from '~utils/hash'
-import { auth as authMiddleware, getAuthUser, verificaPermissaoUsuario } from '~middlewares/auth';
+import { auth as authMiddleware, verificaPermissaoUsuario } from '~middlewares/auth';
 
 /**
  * Controller de usuário

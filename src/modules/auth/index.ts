@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { prisma } from '~libs/prisma';
 import { hashSenha, verificaSenha, hashEmail } from '~utils/hash'
-import { auth as authMiddleware, getAuthUser, verificaPermissaoUsuario } from '~middlewares/auth';
+import { auth as authMiddleware, verificaAuthUser } from '~middlewares/auth';
 
 /**
  * Controller de autenticação
@@ -63,30 +63,58 @@ export const authController = new Elysia({ prefix: '/auth' })
         password: t.String()
       })
     }
-    )
+  )
     
-  .get('/logout', async ({ set, jwt, setCookie, cookie }) => {
-    // pega o usuario pelo token
-    const usuario = await getAuthUser({ jwt, set, cookie });
-    if (!usuario) {
-      set.status = 401;
-      return {
-        status: 401,
-        message: 'Unauthorized',
-        data: null
-      }
-    }
-
+  .get('/logout', async ({ set, setCookie, jwt, cookie, getAuthUser }) : Promise<APIResponse> => {
     // limpa o token do cookie
     setCookie('authToken', '');
 
-    // desconecta do banco para não deixar a conexão aberta
-    await prisma.$disconnect();
-
-    // retorna o token
+    set.status = 200;
     return {
       status: 200,
       message: 'Logout realizado com sucesso.',
       data: null
     }
-  })
+  },
+    {
+      beforeHandle: verificaAuthUser,
+      detail: { 
+        tags: ['Auth'],
+        summary: 'Logout Usuário',
+        description: 'Desloga o usuário da API.',
+        security: [{ cookieAuth: [] }],
+        responses: {
+          200: { 
+            description: 'OK.', 
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Logout realizado com sucesso.' },
+                    data: { type: 'object', example: null },
+                  }
+                }
+              }
+            } 
+          },
+          401: { 
+            description: 'Não autorizado.', 
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 401 },
+                    message: { type: 'string', example: 'Não Autorizado.' },
+                    data: { type: 'object', example: null },
+                  }
+                }
+              }
+            } 
+          }
+        }
+      } 
+    }
+  )

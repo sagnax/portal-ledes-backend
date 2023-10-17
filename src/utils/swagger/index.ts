@@ -77,6 +77,18 @@ export { swaggerConfig };
                 example: 'authToken=abcde12345; secure; httpOnly;' 
               } 
             } 
+          },
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  status: { type: 'number' },
+                  message: { type: 'string' },
+                  data: { type: 'string' },
+                }
+              }
+            }
           } 
         }
       },
