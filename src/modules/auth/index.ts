@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { prisma } from '~libs/prisma';
-import { hashSenha, verificaSenha, hashEmail } from '~utils/hash'
+import { verificaSenha } from '~utils/hash'
 import { auth as authMiddleware, verificaAuthUser } from '~middlewares/auth';
 
 /**
@@ -10,7 +10,7 @@ export const authController = new Elysia({ prefix: '/auth' })
 
   .use(authMiddleware)
 
-  .post('/login', async ({ body: { email, password }, set, jwt, setCookie }) => {
+  .post('/login', async ({ body: { email, password }, set, jwt, setCookie }) : Promise<APIResponse> => {
     const usuario = await prisma.usuarios.findUnique({ where: { email } });
     // se não existir o usuário
     if (!usuario) {
@@ -41,6 +41,7 @@ export const authController = new Elysia({ prefix: '/auth' })
     await prisma.$disconnect();
     
     // retorna o token
+    set.status = 200;
     return {
       status: 200,
       message: 'Login realizado com sucesso.',
@@ -61,11 +62,75 @@ export const authController = new Elysia({ prefix: '/auth' })
       body: t.Object({
         email: t.String(),
         password: t.String()
-      })
+      }),
+      detail: { 
+        tags: ['Auth'],
+        summary: 'Login de Usuário',
+        description: 'Loga o usuário na API, retornando o token de autenticação, setando o token no cookie e retornando os dados do usuário.',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  email: { 
+                    type: 'string', 
+                    example: 'test@gmail.com' 
+                  },
+                  password: { 
+                    type: 'string', 
+                    example: '123456' 
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { 
+            description: 'OK.', 
+            headers: { 
+              'set-cookie': { 
+                schema: { 
+                  type: 'string', 
+                  example: 'authToken=abcde12345; secure; httpOnly;' 
+                } 
+              } 
+            },
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Login realizado com sucesso.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          401: { 
+            description: 'Não autorizado.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 401 },
+                    message: { type: 'string', example: 'Usuário e/ou senha incorretos.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          }
+        }
+      }
     }
   )
     
-  .get('/logout', async ({ set, setCookie, jwt, cookie, getAuthUser }) : Promise<APIResponse> => {
+  .get('/logout', async ({ set, setCookie }) : Promise<APIResponse> => {
     // limpa o token do cookie
     setCookie('authToken', '');
 
@@ -80,7 +145,7 @@ export const authController = new Elysia({ prefix: '/auth' })
       beforeHandle: verificaAuthUser,
       detail: { 
         tags: ['Auth'],
-        summary: 'Logout Usuário',
+        summary: 'Logout de Usuário',
         description: 'Desloga o usuário da API.',
         security: [{ cookieAuth: [] }],
         responses: {
