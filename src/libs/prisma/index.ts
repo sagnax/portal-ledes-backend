@@ -113,6 +113,20 @@ const prisma = new PrismaClient()
           ...args.orderBy
         }
         return await (context as any).findMany(args);
+      },
+      async findManyAtivoWithPagination<T> (this: T, args: Prisma.Args<T, 'findMany'>['findMany'], page: number, limit: number) : Promise<T[]> {
+        const context = Prisma.getExtensionContext(this);
+        args.skip = (page - 1) * limit;
+        args.take = limit;
+        args.where = {
+          situacaoCadastroId: 1,
+          ...args.where
+        }
+        args.orderBy = {
+          id: 'asc',
+          ...args.orderBy
+        }
+        return await (context as any).findMany(args);
       }
     }
   }
@@ -122,7 +136,7 @@ const prisma = new PrismaClient()
   name: 'SoftDelete',
   model: {
     $allModels: {
-      async delete<T> (this: T, args: Prisma.Args<T, 'delete'>['delete']) : Promise<T> {
+      async deleteWithAuthUser<T> (this: T, args: Prisma.Args<T, 'delete'>['delete'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const data = {
           situacaoCadastroId: 2,
@@ -135,9 +149,9 @@ const prisma = new PrismaClient()
         const where = {
           ...args.where
         }
-        return await (context as any).update({data, where});
+        return await (context as any).updateWithAuthUser({data, where}, authUser);
       },
-      async deleteMany<T> (this: T, args: Prisma.Args<T, 'deleteMany'>['deleteMany']) : Promise<T> {
+      async deleteManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'deleteMany'>['deleteMany'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const data = {
           situacaoCadastroId: 2,
@@ -150,7 +164,7 @@ const prisma = new PrismaClient()
         const where = {
           ...args.where
         }
-        return await (context as any).updateMany({data, where});
+        return await (context as any).updateManyWithAuthUser({data, where}, authUser);
       },
     }
   }
