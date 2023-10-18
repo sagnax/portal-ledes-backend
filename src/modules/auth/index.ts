@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { prisma } from '~libs/prisma';
 import { verificaSenha } from '~utils/hash'
-import { auth as authMiddleware, verificaAuthUser } from '~middlewares/auth';
+import { authMiddleware, verificaAuthUser } from '~middlewares/auth';
 
 /**
  * Controller de autenticação
@@ -35,7 +35,7 @@ export const authController = new Elysia({ prefix: '/auth' })
     // se a senha estiver correta, cria o token
     const token = await jwt.sign({ id: usuario.id.toString() });
     // seta o token no cookie
-    setCookie('authToken', token, { httpOnly: true, maxAge: 60 * 10, sameSite: 'lax', secure: true });
+    setCookie('authToken', token, { httpOnly: true, maxAge: 60 * 10 });
     
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
@@ -111,7 +111,7 @@ export const authController = new Elysia({ prefix: '/auth' })
             } 
           },
           401: { 
-            description: 'Não autorizado.',
+            description: 'Unauthorized.',
             content: {
               'application/json': {
                 schema: {
