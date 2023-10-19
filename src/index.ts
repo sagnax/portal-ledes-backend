@@ -2,7 +2,7 @@ import { Elysia } from 'elysia';
 import { swagger } from '@elysiajs/swagger'
 import { swaggerConfig } from '~utils/swagger';
 import { authController } from '~modules/auth';
-import { userController } from '~modules/user';
+import { usersController } from '~modules/users';
 
 
 const app = new Elysia({ prefix: '/api' })
@@ -58,7 +58,7 @@ const app = new Elysia({ prefix: '/api' })
 
   // Controladores das rotas
   .use(authController)
-  .use(userController)
+  .use(usersController)
 
   // Inicia o servidor
   .listen(2077);

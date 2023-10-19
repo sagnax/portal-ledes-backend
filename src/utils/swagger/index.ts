@@ -4,7 +4,7 @@ const swaggerConfig = {
     documentation: {
       info: {
         title: 'API Ledes',
-        description: 'API destinada ao o portal do Ledes',
+        description: 'API destinada ao portal do Ledes',
         version: '1.0.0',
         contact: {
           name: 'Ledes FACOM UFMS',
@@ -22,8 +22,12 @@ const swaggerConfig = {
           description: 'Endpoints de autenticação'
         },
         {
-          name: 'User',
+          name: 'Users',
           description: 'Endpoints de usuários'
+        },
+        {
+          name: 'Projeto',
+          description: 'Endpoints de projetos'
         }
       ]
     }

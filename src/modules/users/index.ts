@@ -8,7 +8,7 @@ import { Usuarios } from '@prisma/client';
 /**
  * Controller de usuário
  */
-export const userController = new Elysia({ prefix: '/user' })
+export const usersController = new Elysia({ prefix: '/users' })
 
   .use(authMiddleware)
 
@@ -112,7 +112,7 @@ export const userController = new Elysia({ prefix: '/user' })
         permissaoUsuarios: t.Optional(t.Boolean()),
       }),
       detail: { 
-        tags: ['User'],
+        tags: ['Users'],
         summary: 'Adicionar Usuário',
         description: 'Adiciona o novo usuário ao banco e retorna os dados do usuário.',
         security: [{ cookieAuth: [] }],
@@ -290,7 +290,7 @@ export const userController = new Elysia({ prefix: '/user' })
         permissaoUsuarios: t.Optional(t.Boolean()),
       }),
       detail: { 
-        tags: ['User'],
+        tags: ['Users'],
         summary: 'Editar Usuário',
         description: 'Edita e retorna os dados do usuário.',
         security: [{ cookieAuth: [] }],
@@ -407,7 +407,7 @@ export const userController = new Elysia({ prefix: '/user' })
     {
       beforeHandle: verificaAuthUser,
       detail: { 
-        tags: ['User'],
+        tags: ['Users'],
         summary: 'Deletar Usuário',
         description: 'Deleta o usuário do sistema (Soft Delete).',
         security: [{ cookieAuth: [] }],
@@ -517,7 +517,7 @@ export const userController = new Elysia({ prefix: '/user' })
   },
     {
       detail: { 
-        tags: ['User'],
+        tags: ['Users'],
         summary: 'Listar Usuários',
         description: 'Retorna uma lista com todos os usuários.',
         responses: {
@@ -587,7 +587,7 @@ export const userController = new Elysia({ prefix: '/user' })
   },
     {
       detail: { 
-        tags: ['User'],
+        tags: ['Users'],
         summary: 'Listar Usuários',
         description: 'Retorna uma lista com todos os usuários.',
         responses: {
