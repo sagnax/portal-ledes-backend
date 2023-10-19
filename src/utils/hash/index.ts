@@ -1,17 +1,36 @@
-// Algoritmo usado para gerar o hash da senha
-const SENHA_INICIO_HASH = "$argon2id$v=19$m=65536,t=2,p=1";
+/** Algoritmo e parametros usados para gerar o hash da senha */
+const ALGORITMO_HASH = "$argon2id$v=19$m=65536,t=2,p=1";
 
-async function hashSenha(senha: string) {
+/**
+ * Faz o hash da senha usando o algoritmo argon2id.
+ * 
+ * @param senha senha a ser criptografada
+ * @returns senha criptografada, sem o algoitmo e parâmetros usados
+ */
+async function hashSenha(senha: string) : Promise<string> {
   let senhaHash = await Bun.password.hash(senha);
-  senhaHash = senhaHash.split(SENHA_INICIO_HASH)[1];
+  senhaHash = senhaHash.split(ALGORITMO_HASH)[1];
   return senhaHash;
 }
 
-async function verificaSenha(senha: string, senhaHash: string) {
-  const senhaCorreta = await Bun.password.verify(senha, SENHA_INICIO_HASH + senhaHash);
+/**
+ * Faz a verificação se a senha dada é a mesma que a senha criptografada.
+ * 
+ * @param senha senha a ser verificada
+ * @param senhaHash hash da senha a ser verificada
+ * @returns true se a senha estiver correta, false se não estiver
+ */
+async function verificaSenha(senha: string, senhaHash: string) : Promise<boolean> {
+  const senhaCorreta = await Bun.password.verify(senha, ALGORITMO_HASH + senhaHash);
   return senhaCorreta;
 }
 
+/**
+ * Faz o hash do email usando o algoritmo sha256.
+ * 
+ * @param email email a ser criptografado
+ * @returns email criptografado
+ */
 async function hashEmail(email: string) {
   const hasher = new Bun.CryptoHasher("sha256");
   const emailHash = hasher.update(email).digest("hex");

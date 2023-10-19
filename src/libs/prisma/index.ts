@@ -42,7 +42,12 @@ const prisma = new PrismaClient()
       async updateWithAuthUser<T> (this: T, args: Prisma.Args<T, 'update'>['update'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.data = {
-          userUpdatedId: authUser.id,
+          // userUpdatedId: authUser.id,
+          userUpdated: {
+            connect: {
+              id: authUser.id
+            }
+          },
           ...args.data
         }
         return await (context as any).update(args);
@@ -51,7 +56,12 @@ const prisma = new PrismaClient()
       async updateManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'updateMany'>['updateMany'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.data = {
-          userUpdatedId: authUser.id,
+          // userUpdatedId: authUser.id,
+          userUpdated: {
+            connect: {
+              id: authUser.id
+            }
+          },
           ...args.data
         }
         return await (context as any).updateMany(args);
@@ -139,7 +149,7 @@ const prisma = new PrismaClient()
       async deleteWithAuthUser<T> (this: T, args: Prisma.Args<T, 'delete'>['delete'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const data = {
-          situacaoCadastroId: 2,
+          // situacaoCadastroId: 2,
           situacaoCadastro: {
             connect: {
               id: 2
@@ -154,7 +164,7 @@ const prisma = new PrismaClient()
       async deleteManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'deleteMany'>['deleteMany'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const data = {
-          situacaoCadastroId: 2,
+          // situacaoCadastroId: 2,
           situacaoCadastro: {
             connect: {
               id: 2

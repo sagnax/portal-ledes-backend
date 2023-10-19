@@ -165,7 +165,7 @@ export const authController = new Elysia({ prefix: '/auth' })
             } 
           },
           401: { 
-            description: 'Não autorizado.', 
+            description: 'Unauthorized.', 
             content: {
               'application/json': {
                 schema: {
