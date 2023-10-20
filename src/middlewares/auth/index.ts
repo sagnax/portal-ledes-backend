@@ -6,13 +6,13 @@ import { Usuarios } from "@prisma/client";
 
 /**
  * Tipos de permissões.
- * 
+ *
  * ADMINISTRADOR: Permissão de Administrador.
- * 
+ *
  * PROJETOS: Permissão de Projetos.
- * 
+ *
  * PUBLICACOES: Permissão de Publicações.
- * 
+ *
  * USUARIOS: Permissão de Usuários.
  */
 type Permissao = "ADMINISTRADOR" | "PROJETOS" | "PUBLICACOES" | "USUARIOS";
@@ -31,10 +31,11 @@ const authMiddleware = new Elysia()
   )
   // Middleware do Elysia de Cookie
   .use(cookie())
-  /** Método para buscar o usuário autenticado */
+  /** Adiciona o método ao contexto, quando utilizar o authMiddleware */
   .decorate('getAuthUser', (context: any) => {
     return getAuthUser(context);
   })
+  /** Adiciona o método ao contexto, quando utilizar o authMiddleware */
   .decorate('verificaPermissao', (usuario: Usuarios, permissao: Permissao, id?: number) => {
     return verificaPermissao(usuario, permissao, id);
   })
@@ -42,35 +43,40 @@ const authMiddleware = new Elysia()
 
 /**
  * Função que retorna o usuário autenticado.
- * 
+ *
  * @param context - { jwt, cookie: { authToken } } - jwt e cookie para verificar o usuário.
  * @returns usuário autenticado ou nulo caso não esteja autenticado.
  */
-async function getAuthUser ({ jwt, cookie: { authToken } }: any) : Promise<Usuarios | null> {
-    const user = await jwt.verify(authToken);
-    if (!user) {
-      return null;
-    }
-    const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
-    if (!usuario) {
-      return null;
-    }
-    return usuario as unknown as Usuarios;
+async function getAuthUser({ jwt, cookie: { authToken } }: any): Promise<Usuarios> {
+  const user = await jwt.verify(authToken);
+  if (!user) {
+    throw {
+      status: 401,
+      message: 'Token inválido.',
+      data: null
+    };
+  }
+  const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
+  if (!usuario) {
+    throw {
+      status: 401,
+      message: 'Usuário não existe.',
+      data: null };
+  }
+  return usuario as unknown as Usuarios;
 }
 
 /**
  * Função para o beforeHandle para verificar se o usuário está autenticado.
- * 
+ *
  * @param context - { jwt, cookie: { authToken } } - jwt e cookie para verificar o usuário.
- * @returns Retorna um objeto com o status, message e data caso o usuário não esteja autenticado
- * ou continua o fluxo caso o usuário esteja autenticado.
+ * @returns Caso o usuário esteja autenticado, continua o fluxo. Caso não esteja, retorna um erro.
  */
-async function verificaAuthUser ({ set, jwt, cookie: { authToken } }: any) : Promise<APIResponse | void> {
+async function verificaAuthUser({ set, jwt, cookie: { authToken } }: any): Promise<void> {
   const user = await jwt.verify(authToken);
   if (!user) {
     console.log('Token inválido.');
-    set.status = 401;
-    return {
+    throw {
       status: 401,
       message: 'Token inválido.',
       data: null
@@ -79,15 +85,14 @@ async function verificaAuthUser ({ set, jwt, cookie: { authToken } }: any) : Pro
   const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
   if (!usuario) {
     console.log('Usuário não existe.');
-    set.status = 401;
-    return {
+    throw {
       status: 401,
       message: 'Usuário não existe.',
       data: null
     };
   }
   console.log('Usuário está autenticado.');
-} 
+}
 
 /**
  * Função que verifica se o usuário tem a permissão desejada
@@ -96,27 +101,36 @@ async function verificaAuthUser ({ set, jwt, cookie: { authToken } }: any) : Pro
  * @param id id do usuario que se deseja editar
  * @returns true se o usuario tem a permissão, false se não tem
  */
-function verificaPermissao (usuario: Usuarios, permissao: Permissao, id?: number) : boolean {
+function verificaPermissao(usuario: Usuarios, permissao: Permissao, id?: number): boolean {
+  let temPermissao = false;
   // Verifica se tem permissão de Administrador
   // Apenas tendo a permisão de Administrador, já tem acesso a tudo
   // Se não tiver a permissão de Administrador, verifica se tem a permissão específica
   if (usuario.permissaoAdmin) {
-    return true;
+    temPermissao = true;
   }
   else if (permissao === "ADMINISTRADOR") {
-    return usuario.permissaoAdmin;
+    temPermissao =  usuario.permissaoAdmin;
   }
   else if (permissao === "PROJETOS") {
-    return usuario.permissaoProjetos;
+    temPermissao =  usuario.permissaoProjetos;
   }
   else if (permissao === "PUBLICACOES") {
-    return usuario.permissaoPublicacoes;
+    temPermissao =  usuario.permissaoPublicacoes;
   }
   else if (permissao === "USUARIOS") {
-    return (usuario.permissaoUsuarios || usuario.id === id);
+    temPermissao =  (usuario.permissaoUsuarios || usuario.id === id);
+  }
+  // Se não tiver a permissão, retorna um erro
+  if (temPermissao) {
+    return true;
   }
   else {
-    return false;
+    throw {
+      status: 403,
+      message: 'Usuário sem permissão.',
+      data: null
+    };
   }
 }
 

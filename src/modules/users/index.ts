@@ -16,14 +16,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
-    if (!verificaPermissao(usuario, "USUARIOS")) {
-      set.status = 403;
-      return {
-        status: 403,
-        message: 'Usuário sem permissão.',
-        data: null
-      }
-    }
+    verificaPermissao(usuario, "USUARIOS");
 
     // pega os dados do body
     const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
@@ -201,14 +194,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
-    if (!verificaPermissao(usuario, "USUARIOS", parseInt(params.id))) {
-      set.status = 403;
-      return {
-        status: 403,
-        message: 'Usuário sem permissão.',
-        data: null
-      }
-    }
+    verificaPermissao(usuario, "USUARIOS", parseInt(params.id));
 
     // pega os dados do body
     const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
@@ -364,14 +350,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
-    if (!verificaPermissao(usuario, "USUARIOS")) {
-      set.status = 403;
-      return {
-        status: 403,
-        message: 'Usuário sem permissão.',
-        data: null
-      }
-    }
+    verificaPermissao(usuario, "USUARIOS");
 
     // verifica se o id existe
     const usuarioParaDeletar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
