@@ -3,30 +3,35 @@ import { swagger } from '@elysiajs/swagger'
 import { swaggerConfig } from '~utils/swagger';
 import { authController } from '~modules/auth';
 import { usersController } from '~modules/users';
+import { APIResponseError } from '~utils/erros';
 
 
 const app = new Elysia({ prefix: '/api' })
   // Log de todas as requisições
-  .onRequest((context) => {
-    console.log(`${context.request.method} - ${context.request.url}`);
+  .onRequest(({ request }) => {
+    console.log(`${request.method} - ${request.url}`);
   })
   
   // Tratamento de erros
-  .onError((context) => {
-    console.log(context.error);
+  .onError(({ error, set }) => {
+    console.log(error);
+    // status, message e data padrão
+    let status = 500;
+    let message = 'Internal Server Error';
+    let data = null;
 
-    let message = 'Error';
-    if ('status' in context.error) {
-      context.set.status = context.error.status;
-      message = context.error.message;
-    } else {
-      context.set.status = 500;
-      message = 'Internal Server Error';
+    // verifica se o erro é um erro da API, se for, pega os dados do erro
+    if (error instanceof APIResponseError) {
+      status = error.errorData.status;
+      message = error.errorData.message;
+      data = error.errorData.data;
     }
+    // retorna o erro tratado
+    set.status = status;
     return {
-      status: context.set.status,
+      status: status,
       message: message,
-      data: null,
+      data: data,
     }
   })
 

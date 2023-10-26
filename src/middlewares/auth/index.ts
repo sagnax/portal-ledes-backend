@@ -3,6 +3,7 @@ import { prisma } from "~libs/prisma";
 import { cookie } from "@elysiajs/cookie";
 import { jwt } from "@elysiajs/jwt";
 import { Usuarios } from "@prisma/client";
+import { APIResponseError } from "~utils/erros";
 
 /**
  * Tipos de permissões.
@@ -47,21 +48,22 @@ const authMiddleware = new Elysia()
  * @param context - { jwt, cookie: { authToken } } - jwt e cookie para verificar o usuário.
  * @returns usuário autenticado ou nulo caso não esteja autenticado.
  */
-async function getAuthUser({ jwt, cookie: { authToken } }: any): Promise<Usuarios> {
+async function getAuthUser({ jwt, cookie: { authToken } }: any): Promise<Usuarios | APIResponseError> {
   const user = await jwt.verify(authToken);
   if (!user) {
-    throw {
+    return new APIResponseError ({
       status: 401,
       message: 'Token inválido.',
       data: null
-    };
+    });
   }
   const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
   if (!usuario) {
-    throw {
+    return new APIResponseError ({
       status: 401,
       message: 'Usuário não existe.',
-      data: null };
+      data: null 
+    });
   }
   return usuario as unknown as Usuarios;
 }
@@ -72,24 +74,24 @@ async function getAuthUser({ jwt, cookie: { authToken } }: any): Promise<Usuario
  * @param context - { jwt, cookie: { authToken } } - jwt e cookie para verificar o usuário.
  * @returns Caso o usuário esteja autenticado, continua o fluxo. Caso não esteja, retorna um erro.
  */
-async function verificaAuthUser({ set, jwt, cookie: { authToken } }: any): Promise<void> {
+async function verificaAuthUser({ set, jwt, cookie: { authToken } }: any): Promise<void | APIResponseError> {
   const user = await jwt.verify(authToken);
   if (!user) {
     console.log('Token inválido.');
-    throw {
+    return new APIResponseError ({
       status: 401,
       message: 'Token inválido.',
       data: null
-    };
+    });
   }
   const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } });
   if (!usuario) {
     console.log('Usuário não existe.');
-    throw {
+    return new APIResponseError ({
       status: 401,
       message: 'Usuário não existe.',
       data: null
-    };
+    });
   }
   console.log('Usuário está autenticado.');
 }
@@ -101,7 +103,7 @@ async function verificaAuthUser({ set, jwt, cookie: { authToken } }: any): Promi
  * @param id id do usuario que se deseja editar
  * @returns true se o usuario tem a permissão, false se não tem
  */
-function verificaPermissao(usuario: Usuarios, permissao: Permissao, id?: number): boolean {
+function verificaPermissao(usuario: Usuarios, permissao: Permissao, id?: number): boolean | APIResponseError {
   let temPermissao = false;
   // Verifica se tem permissão de Administrador
   // Apenas tendo a permisão de Administrador, já tem acesso a tudo
@@ -126,11 +128,11 @@ function verificaPermissao(usuario: Usuarios, permissao: Permissao, id?: number)
     return true;
   }
   else {
-    throw {
+    return new APIResponseError ({
       status: 403,
       message: 'Usuário sem permissão.',
       data: null
-    };
+    });
   }
 }
 

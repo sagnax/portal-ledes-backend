@@ -4,6 +4,7 @@ import { hashSenha, hashEmail } from '~utils/hash'
 import { validadorSenha, validadorEmail } from '~utils/validadores'
 import { authMiddleware, verificaAuthUser } from '~middlewares/auth';
 import { Usuarios } from '@prisma/client';
+import { APIResponseError } from '~utils/erros';
 
 /**
  * Controller de usuário
@@ -12,7 +13,7 @@ export const usersController = new Elysia({ prefix: '/users' })
 
   .use(authMiddleware)
 
-  .post('/add', async ({ body, set, cookie, jwt, getAuthUser, verificaPermissao }) => {
+  .post('/add', async ({ body, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
@@ -23,23 +24,21 @@ export const usersController = new Elysia({ prefix: '/users' })
 
     // verifica se o email e senha são válidos
     if (!validadorEmail(email) || !validadorSenha(password)) {
-      set.status = 400;
-      return {
+      return new APIResponseError ({
         status: 400,
         message: 'Email e/ou Senha não atende aos requisitos mínimos.',
         data: null
-      }
+      });
     }
 
     // verifica se o email já existe
     const novoUsuario = await prisma.usuarios.findUnique({ where: { email } });
     if (novoUsuario) {
-      set.status = 409;
-      return {
+      return new APIResponseError ({
         status: 409,
         message: 'Usuário já existe.',
         data: null
-      }
+      });
     }
 
     // salva a foto no servidor

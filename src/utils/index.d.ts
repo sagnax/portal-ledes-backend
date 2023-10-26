@@ -6,9 +6,3 @@ type APIResponse = {
   message: string;
   data: any;
 };
-
-type APIError = {
-  status: number;
-  message: string;
-  data?: any;
-}
