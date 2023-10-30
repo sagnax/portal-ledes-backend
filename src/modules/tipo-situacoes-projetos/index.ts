@@ -5,9 +5,9 @@ import { Usuarios } from '@prisma/client';
 import { APIResponseError } from '~utils/erros';
 
 /**
- * Controller de Tipo Projetos
+ * Controller de Tipo Situações Projetos
  */
-export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
+export const tipoSituacoesProjetosController = new Elysia({ prefix: '/tipo-situacoes-projetos' })
 
   .use(authMiddleware)
 
@@ -20,12 +20,12 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     // pega os dados do body
     const { nome } = body;
 
-    // verifica se o tipo projeto já existe
-    const tipoProjetoExiste = await prisma.tipoProjetos.findFirstAtivo({ where: { nome } });
-    if (tipoProjetoExiste) {
+    // verifica se o tipo situação projeto já existe
+    const tipoSituacaoProjetoExiste = await prisma.tipoSituacoesProjetos.findFirstAtivo({ where: { nome } });
+    if (tipoSituacaoProjetoExiste) {
       return new APIResponseError ({
         status: 409,
-        message: 'Tipo Projeto já existe.',
+        message: 'Tipo Situação Projeto já existe.',
         data: null
       });
     }
@@ -39,8 +39,8 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
       });
     }
 
-    // cria o novo tip o projeto
-    const novoTipoProjetoCriado = await prisma.tipoProjetos.createWithAuthUser({
+    // cria o novo tipo situação projeto
+    const novoTipoSituacaoProjetoCriado = await prisma.tipoSituacoesProjetos.createWithAuthUser({
       data: {
         nome,
       }
@@ -51,12 +51,12 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna o novo tipo projeto
+    // retorna o novo tipo situação projeto
     set.status = 201;
     return {
       status: 201,
-      message: 'Tipo Projeto criado com sucesso.',
-      data: novoTipoProjetoCriado
+      message: 'Tipo Situação Projeto criado com sucesso.',
+      data: novoTipoSituacaoProjetoCriado
     }
   },
     {
@@ -65,9 +65,9 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
         nome: t.String(),
       }),
       detail: { 
-        tags: ['Tipo Projetos'],
-        summary: 'Adicionar Tipo Projeto',
-        description: 'Adiciona o novo tipo projeto ao banco e retorna os dados do tipo projeto.',
+        tags: ['Tipo Situações Projetos'],
+        summary: 'Adicionar Tipo Situação Projeto',
+        description: 'Adiciona o novo tipo situação projeto ao banco e retorna os dados do tipo situação projeto.',
         security: [{ cookieAuth: [] }],
         responses: {
           201: {
@@ -78,7 +78,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 201 },
-                    message: { type: 'string', example: 'Tipo Projeto criado com sucesso.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto criado com sucesso.' },
                     data: { type: 'object' },
                   }
                 }
@@ -138,7 +138,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 409 },
-                    message: { type: 'string', example: 'Tipo Projeto já existe.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto já existe.' },
                     data: { type: 'object' },
                   }
                 }
@@ -160,16 +160,16 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     const { nome } = body;
 
     // verifica se o id existe
-    const tipoProjetoParaEditar = await prisma.tipoProjetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
-    if (!tipoProjetoParaEditar) {
+    const tipoSituacaoProjetoParaEditar = await prisma.tipoSituacoesProjetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!tipoSituacaoProjetoParaEditar) {
       return new APIResponseError ({
         status: 404,
-        message: 'Tipo Projeto não existe.',
+        message: 'Tipo Situação Projeto não existe.',
         data: null
       });
     }
 
-    const tipoProjetoEditado = await prisma.tipoProjetos.updateWithAuthUser({
+    const tipoSituacaoProjetoEditado = await prisma.tipoSituacoesProjetos.updateWithAuthUser({
       data: {
         nome,
       },
@@ -183,12 +183,12 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna o tipo projeto editado
+    // retorna o tipo situação projeto editado
     set.status = 200;
     return {
       status: 200,
-      message: 'Tipo Projeto editado com sucesso.',
-      data: tipoProjetoEditado
+      message: 'Tipo Situação Projeto editado com sucesso.',
+      data: tipoSituacaoProjetoEditado
     }
   },
     {
@@ -197,9 +197,9 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
         nome: t.String(),
       }),
       detail: { 
-        tags: ['Tipo Projetos'],
-        summary: 'Editar Tipo Projeto',
-        description: 'Edita e retorna os dados do tipo projeto.',
+        tags: ['Tipo Situações Projetos'],
+        summary: 'Editar Tipo Situação Projeto',
+        description: 'Edita e retorna os dados do tipo situação projeto.',
         security: [{ cookieAuth: [] }],
         responses: {
           200: {
@@ -210,7 +210,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Tipo Projeto editado com sucesso.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto editado com sucesso.' },
                     data: { type: 'object' },
                   }
                 }
@@ -255,7 +255,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 404 },
-                    message: { type: 'string', example: 'Tipo Projeto não encontrado.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto não encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -274,17 +274,17 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     verificaPermissao(usuario, "ADMINISTRADOR");
 
     // verifica se o id existe
-    const tipoProjetoParaDeletar = await prisma.tipoProjetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
-    if (!tipoProjetoParaDeletar) {
+    const tipoSituacaoProjetoParaDeletar = await prisma.tipoSituacoesProjetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!tipoSituacaoProjetoParaDeletar) {
       return new APIResponseError ({
         status: 404,
-        message: 'Tipo Projeto não existe.',
+        message: 'Tipo Situação Projeto não existe.',
         data: null
       });
     }
 
-    // deleta o tipo projeto
-    const tipoProjetoDeletado = await prisma.tipoProjetos.deleteWithAuthUser({
+    // deleta o tipo situação projeto
+    const tipoSituacaoProjetoDeletado = await prisma.tipoSituacoesProjetos.deleteWithAuthUser({
       where: {
         id: parseInt(params.id)
       }
@@ -299,16 +299,16 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     set.status = 200;
     return {
       status: 200,
-      message: 'Tipo Projeto deletado com sucesso.',
+      message: 'Tipo Situação Projeto deletado com sucesso.',
       data: null
     }
   },
     {
       beforeHandle: verificaAuthUser,
       detail: { 
-        tags: ['Tipo Projetos'],
-        summary: 'Deletar Tipo Projetos',
-        description: 'Deleta o tipo projeto do sistema (Soft Delete).',
+        tags: ['Tipo Situações Projetos'],
+        summary: 'Deletar Tipo Situação Projetos',
+        description: 'Deleta o tipo situação projeto do sistema (Soft Delete).',
         security: [{ cookieAuth: [] }],
         responses: {
           200: {
@@ -319,7 +319,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Tipo Projeto deletado com sucesso.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto deletado com sucesso.' },
                     data: { type: 'object' },
                   }
                 }
@@ -364,7 +364,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 404 },
-                    message: { type: 'string', example: 'Tipo Projeto não encontrado.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto não encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -377,8 +377,8 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
   )
 
   .get('/view/:id', async ({ params, set }) : Promise<APIResponse | APIResponseError> => {
-    // pega o tipo projeto
-    const tipoProjeto = await prisma.tipoProjetos.findUniqueAtivo({ 
+    // pega o tipo situação projeto
+    const tipoSituacaoProjeto = await prisma.tipoSituacoesProjetos.findUniqueAtivo({ 
       select : {
         id: true,
         nome: true,
@@ -388,10 +388,10 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
       }
     });
 
-    if (!tipoProjeto) {
+    if (!tipoSituacaoProjeto) {
       return new APIResponseError ({
         status: 404,
-        message: 'Tipo Projeto não existe.',
+        message: 'Tipo Situação Projeto não existe.',
         data: null
       });
     }
@@ -399,19 +399,19 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna o tipo projeto
+    // retorna o tipo situação projeto
     set.status = 200;
     return {
       status: 200,
-      message: 'Tipo Projeto encontrado.',
-      data: tipoProjeto
+      message: 'Tipo Situação Projeto encontrado.',
+      data: tipoSituacaoProjeto
     }
   },
     {
       detail: { 
-        tags: ['Tipo Projetos'],
-        summary: 'Visualiza um Tipo Projeto',
-        description: 'Retorna um tipo projeto específico.',
+        tags: ['Tipo Situações Projetos'],
+        summary: 'Visualiza um Tipo Situação Projeto',
+        description: 'Retorna um tipo situação projeto específico.',
         responses: {
           200: { 
             description: 'OK',
@@ -421,7 +421,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Tipo Projeto encontrado.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -436,7 +436,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 404 },
-                    message: { type: 'string', example: 'Tipo Projeto não encontrado.' },
+                    message: { type: 'string', example: 'Tipo Situação Projeto não encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -449,8 +449,8 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
   )
 
   .get('/list', async ({ set }) : Promise<APIResponse> => {
-    // pega todos os tipos projetos
-    const tipoProjetos = await prisma.tipoProjetos.findManyAtivo({ 
+    // pega todos os tipos situações projetos
+    const tipoSituacoesProjetos = await prisma.tipoSituacoesProjetos.findManyAtivo({ 
       select : {
         id: true,
         nome: true,
@@ -463,19 +463,19 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna os tipos projetos
+    // retorna os tipos situações projetos
     set.status = 200;
     return {
       status: 200,
-      message: 'Tipo Projetos encontrados.',
-      data: tipoProjetos
+      message: 'Tipo Situações Projetos encontrados.',
+      data: tipoSituacoesProjetos
     }
   },
     {
       detail: { 
-        tags: ['Tipo Projetos'],
-        summary: 'Listar Tipo Projetos',
-        description: 'Retorna uma lista com todos os tipo Projetos.',
+        tags: ['Tipo Situações Projetos'],
+        summary: 'Listar Tipo Situações Projetos',
+        description: 'Retorna uma lista com todos os tipo situações projetos.',
         responses: {
           200: { 
             description: 'OK',
@@ -485,7 +485,7 @@ export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Tipo Projetos encontrados.' },
+                    message: { type: 'string', example: 'Tipo Situações Projetos encontrados.' },
                     data: { type: 'array', items: { type: 'object' } },
                   }
                 }

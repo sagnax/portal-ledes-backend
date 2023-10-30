@@ -26,16 +26,16 @@ const swaggerConfig = {
         description: 'Endpoints de usuários'
       },
       {
-        name: 'Projeto',
+        name: 'Projetos',
         description: 'Endpoints de projetos'
-      },
-      {
-        name: 'Tipo Projetos',
-        description: 'Endpoints de tipos projetos'
       },
       {
         name: 'Tipo Situações Projetos',
         description: 'Endpoints de tipos situações projetos'
+      },
+      {
+        name: 'Tipo Projetos',
+        description: 'Endpoints de tipos projetos'
       },
       {
         name: 'Tipo Vínculos',

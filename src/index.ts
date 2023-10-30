@@ -4,6 +4,7 @@ import { swaggerConfig } from '~utils/swagger';
 import { authController } from '~modules/auth';
 import { usersController } from '~modules/users';
 import { tipoProjetosController } from '~modules/tipo-projetos';
+import { tipoSituacoesProjetosController } from '~modules/tipo-situacoes-projetos';
 import { APIResponseError } from '~utils/erros';
 
 
@@ -65,6 +66,7 @@ const app = new Elysia({ prefix: '/api' })
   // Controladores das rotas
   .use(authController)
   .use(usersController)
+  .use(tipoSituacoesProjetosController)
   .use(tipoProjetosController)
 
   // Inicia o servidor
