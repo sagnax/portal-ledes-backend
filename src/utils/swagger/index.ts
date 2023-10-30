@@ -1,36 +1,52 @@
 // Swagger type and initial data
 const swaggerConfig = {
-    path: '/swagger',
-    documentation: {
-      info: {
-        title: 'API Ledes',
-        description: 'API destinada ao portal do Ledes',
-        version: '1.0.0',
-        contact: {
-          name: 'Ledes FACOM UFMS',
-          email: 'test@gmail.com',
-          url: 'https://facom.ufms.br'
-        },
+  path: '/swagger',
+  documentation: {
+    info: {
+      title: 'API Ledes',
+      description: 'API destinada ao portal do Ledes',
+      version: '1.0.0',
+      contact: {
+        name: 'Ledes FACOM UFMS',
+        email: 'test@gmail.com',
+        url: 'https://facom.ufms.br'
       },
-      tags: [
-        {
-          name: 'Home',
-          description: 'Entrada da API'
-        },
-        {
-          name: 'Auth',
-          description: 'Endpoints de autenticação'
-        },
-        {
-          name: 'Users',
-          description: 'Endpoints de usuários'
-        },
-        {
-          name: 'Projeto',
-          description: 'Endpoints de projetos'
-        }
-      ]
-    }
+    },
+    tags: [
+      {
+        name: 'Home',
+        description: 'Entrada da API'
+      },
+      {
+        name: 'Auth',
+        description: 'Endpoints de autenticação'
+      },
+      {
+        name: 'Users',
+        description: 'Endpoints de usuários'
+      },
+      {
+        name: 'Projeto',
+        description: 'Endpoints de projetos'
+      },
+      {
+        name: 'Tipo Projetos',
+        description: 'Endpoints de tipos projetos'
+      },
+      {
+        name: 'Tipo Situações Projetos',
+        description: 'Endpoints de tipos situações projetos'
+      },
+      {
+        name: 'Tipo Vínculos',
+        description: 'Endpoints de tipos vínculos'
+      },
+      {
+        name: 'Tipo Papéis',
+        description: 'Endpoints de tipos papéis'
+      }
+    ]
+  }
 }
 
 export { swaggerConfig };

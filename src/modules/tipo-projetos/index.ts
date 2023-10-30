@@ -9,7 +9,7 @@ import { APIResponseError } from '~utils/erros';
 /**
  * Controller de usuário
  */
-export const usersController = new Elysia({ prefix: '/users' })
+export const tipoProjetosController = new Elysia({ prefix: '/tipo-projetos' })
 
   .use(authMiddleware)
 
@@ -17,59 +17,34 @@ export const usersController = new Elysia({ prefix: '/users' })
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
-    verificaPermissao(usuario, "USUARIOS");
+    verificaPermissao(usuario, "ADMINISTRADOR");
 
     // pega os dados do body
-    const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
+    const { nome } = body;
 
-    // verifica se o email e senha são válidos
-    if (!validadorEmail(email) || !validadorSenha(password)) {
-      return new APIResponseError ({
-        status: 400,
-        message: 'Email e/ou Senha não atende aos requisitos mínimos.',
-        data: null
-      });
-    }
-
-    // verifica se o email já existe
-    const novoUsuario = await prisma.usuarios.findUnique({ where: { email } });
-    if (novoUsuario) {
+    // verifica se o tipo projeto já existe
+    const tipoProjetoExiste = await prisma.tipoProjetos.findFirstAtivo({ where: { nome } });
+    if (tipoProjetoExiste) {
       return new APIResponseError ({
         status: 409,
-        message: 'Usuário já existe.',
+        message: 'Tipo Projeto já existe.',
         data: null
       });
     }
 
-    // salva a foto no servidor
-    let fotoPath = '';
-    if (foto) {
-      fotoPath = `./public/uploads/img/usuarios/${email}/${foto.name}`;
-      const fotoBuffer = await foto.arrayBuffer();
-      const uploaded = await Bun.write(fotoPath, fotoBuffer);
-    }
-    else {
-      const hashedEmail = await hashEmail(email);
-      fotoPath = `https://www.gravatar.com/avatar/${hashedEmail}?d=identicon`;
+    // verifica se o email e senha são válidos
+    if (nome && nome.length < 3) {
+      return new APIResponseError ({
+        status: 400,
+        message: 'Nome não atende aos requisitos mínimos.',
+        data: null
+      });
     }
 
-    // cria o novo usuario
-    const hashedSenha = await hashSenha(password);
-    const novoUsuarioCriado = await prisma.usuarios.createWithAuthUser({
+    // cria o novo tip o projeto
+    const novoTipoProjetoCriado = await prisma.tipoProjetos.createWithAuthUser({
       data: {
         nome,
-        sobrenome,
-        email,
-        senha: hashedSenha,
-        linkedin,
-        github,
-        curso,
-        funcao,
-        foto: fotoPath,
-        permissaoAdmin,
-        permissaoProjetos,
-        permissaoPublicacoes,
-        permissaoUsuarios,
       }
     },
       usuario
@@ -78,35 +53,23 @@ export const usersController = new Elysia({ prefix: '/users' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna o novo usuario
+    // retorna o novo tipo projeto
     set.status = 201;
     return {
       status: 201,
-      message: 'Usuário criado com sucesso.',
-      data: novoUsuarioCriado
+      message: 'Tipo Projeto criado com sucesso.',
+      data: novoTipoProjetoCriado
     }
   },
     {
       beforeHandle: verificaAuthUser,
       body: t.Object({
-        nome: t.Optional(t.String()),
-        sobrenome: t.Optional(t.String()),
-        email: t.String(),
-        password: t.String(),
-        linkedin: t.Optional(t.String()),
-        github: t.Optional(t.String()),
-        curso: t.Optional(t.String()),
-        funcao: t.Optional(t.Integer()),
-        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
-        permissaoAdmin: t.Optional(t.Boolean()),
-        permissaoProjetos: t.Optional(t.Boolean()),
-        permissaoPublicacoes: t.Optional(t.Boolean()),
-        permissaoUsuarios: t.Optional(t.Boolean()),
+        nome: t.String(),
       }),
       detail: { 
-        tags: ['Users'],
-        summary: 'Adicionar Usuário',
-        description: 'Adiciona o novo usuário ao banco e retorna os dados do usuário.',
+        tags: ['Tipo Projetos'],
+        summary: 'Adicionar Tipo Projeto',
+        description: 'Adiciona o novo tipo projeto ao banco e retorna os dados do tipo projeto.',
         security: [{ cookieAuth: [] }],
         responses: {
           201: {
@@ -117,7 +80,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 201 },
-                    message: { type: 'string', example: 'Usuário criado com sucesso.' },
+                    message: { type: 'string', example: 'Tipo Projeto criado com sucesso.' },
                     data: { type: 'object' },
                   }
                 }
@@ -132,7 +95,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 400 },
-                    message: { type: 'string', example: 'Email e/ou Senha não atende aos requisitos mínimos.' },
+                    message: { type: 'string', example: 'Nome não atende aos requisitos mínimos.' },
                     data: { type: 'object' },
                   }
                 }
@@ -177,7 +140,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 409 },
-                    message: { type: 'string', example: 'Usuário já existe.' },
+                    message: { type: 'string', example: 'Tipo Projeto já existe.' },
                     data: { type: 'object' },
                   }
                 }
@@ -193,50 +156,24 @@ export const usersController = new Elysia({ prefix: '/users' })
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
-    verificaPermissao(usuario, "USUARIOS", parseInt(params.id));
+    verificaPermissao(usuario, "ADMINISTRADOR");
 
     // pega os dados do body
-    const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
+    const { nome } = body;
 
     // verifica se o id existe
-    const usuarioParaEditar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
-    if (!usuarioParaEditar) {
+    const tipoProjetoParaEditar = await prisma.tipoProjetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!tipoProjetoParaEditar) {
       return new APIResponseError ({
         status: 404,
-        message: 'Usuário não existe.',
+        message: 'Tipo Projeto não existe.',
         data: null
       });
     }
 
-    // salva a foto no servidor
-    let fotoPath = '';
-    if (foto) {
-      fotoPath = `./public/uploads/img/usuarios/${email}/${foto.name}`;
-      const fotoBuffer = await foto.arrayBuffer();
-      const uploaded = await Bun.write(fotoPath, fotoBuffer);
-    }
-    else {
-      const hashedEmail = await hashEmail(email);
-      fotoPath = `https://www.gravatar.com/avatar/${hashedEmail}?d=identicon`;
-    }
-
-    // edita o usuario
-    const hashedSenha = await hashSenha(password);
-    const usuarioEditado = await prisma.usuarios.updateWithAuthUser({
+    const tipoProjetoEditado = await prisma.tipoProjetos.updateWithAuthUser({
       data: {
         nome,
-        sobrenome,
-        // email,
-        senha: hashedSenha,
-        linkedin,
-        github,
-        curso,
-        funcao,
-        foto: fotoPath,
-        permissaoAdmin,
-        permissaoProjetos,
-        permissaoPublicacoes,
-        permissaoUsuarios,
       },
       where: {
         id: parseInt(params.id)
@@ -248,35 +185,23 @@ export const usersController = new Elysia({ prefix: '/users' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna o usuario editado
+    // retorna o tipo projeto editado
     set.status = 200;
     return {
       status: 200,
-      message: 'Usuário editado com sucesso.',
-      data: usuarioEditado
+      message: 'Tipo Projeto editado com sucesso.',
+      data: tipoProjetoEditado
     }
   },
     {
       beforeHandle: verificaAuthUser,
       body: t.Object({
-        nome: t.Optional(t.String()),
-        sobrenome: t.Optional(t.String()),
-        email: t.String(),
-        password: t.String(),
-        linkedin: t.Optional(t.String()),
-        github: t.Optional(t.String()),
-        curso: t.Optional(t.String()),
-        funcao: t.Optional(t.Integer()),
-        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
-        permissaoAdmin: t.Optional(t.Boolean()),
-        permissaoProjetos: t.Optional(t.Boolean()),
-        permissaoPublicacoes: t.Optional(t.Boolean()),
-        permissaoUsuarios: t.Optional(t.Boolean()),
+        nome: t.String(),
       }),
       detail: { 
-        tags: ['Users'],
-        summary: 'Editar Usuário',
-        description: 'Edita e retorna os dados do usuário.',
+        tags: ['Tipo Projetos'],
+        summary: 'Editar Tipo Projeto',
+        description: 'Edita e retorna os dados do tipo projeto.',
         security: [{ cookieAuth: [] }],
         responses: {
           200: {
@@ -287,7 +212,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Usuário editado com sucesso.' },
+                    message: { type: 'string', example: 'Tipo Projeto editado com sucesso.' },
                     data: { type: 'object' },
                   }
                 }
@@ -332,7 +257,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 404 },
-                    message: { type: 'string', example: 'Usuário não encontrado.' },
+                    message: { type: 'string', example: 'Tipo Projeto não encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -348,11 +273,11 @@ export const usersController = new Elysia({ prefix: '/users' })
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
-    verificaPermissao(usuario, "USUARIOS");
+    verificaPermissao(usuario, "ADMINISTRADOR");
 
     // verifica se o id existe
-    const usuarioParaDeletar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
-    if (!usuarioParaDeletar) {
+    const tipoProjetoParaDeletar = await prisma.tipoProjetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!tipoProjetoParaDeletar) {
       return new APIResponseError ({
         status: 404,
         message: 'Usuário não existe.',
@@ -360,8 +285,8 @@ export const usersController = new Elysia({ prefix: '/users' })
       });
     }
 
-    // deleta o usuario
-    const usuarioDeletado = await prisma.usuarios.deleteWithAuthUser({
+    // deleta o tipo projeto
+    const tipoProjetoDeletado = await prisma.tipoProjetos.deleteWithAuthUser({
       where: {
         id: parseInt(params.id)
       }
@@ -376,16 +301,16 @@ export const usersController = new Elysia({ prefix: '/users' })
     set.status = 200;
     return {
       status: 200,
-      message: 'Usuário deletado com sucesso.',
+      message: 'Tipo Projeto deletado com sucesso.',
       data: null
     }
   },
     {
       beforeHandle: verificaAuthUser,
       detail: { 
-        tags: ['Users'],
-        summary: 'Deletar Usuário',
-        description: 'Deleta o usuário do sistema (Soft Delete).',
+        tags: ['Tipo Projetos'],
+        summary: 'Deletar Tipo Projetos',
+        description: 'Deleta o tipo projeto do sistema (Soft Delete).',
         security: [{ cookieAuth: [] }],
         responses: {
           200: {
@@ -396,7 +321,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Usuário deletado com sucesso.' },
+                    message: { type: 'string', example: 'Tipo Projeto deletado com sucesso.' },
                     data: { type: 'object' },
                   }
                 }
@@ -441,7 +366,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 404 },
-                    message: { type: 'string', example: 'Usuário não encontrado.' },
+                    message: { type: 'string', example: 'Tipo Projeto não encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -454,27 +379,21 @@ export const usersController = new Elysia({ prefix: '/users' })
   )
 
   .get('/view/:id', async ({ params, set }) : Promise<APIResponse | APIResponseError> => {
-    // pega todos os usuarios
-    const usuario = await prisma.usuarios.findUniqueAtivo({ 
+    // pega o tipo projeto
+    const tipoProjeto = await prisma.tipoProjetos.findUniqueAtivo({ 
       select : {
         id: true,
         nome: true,
-        sobrenome: true,
-        linkedin: true,
-        github: true,
-        curso: true,
-        funcao: true,
-        foto: true,
       },
       where: {
         id: parseInt(params.id)
       }
     });
 
-    if (!usuario) {
+    if (!tipoProjeto) {
       return new APIResponseError ({
         status: 404,
-        message: 'Usuário não existe.',
+        message: 'Tipo Projeto não existe.',
         data: null
       });
     }
@@ -482,19 +401,19 @@ export const usersController = new Elysia({ prefix: '/users' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna os usuarios
+    // retorna o tipo projeto
     set.status = 200;
     return {
       status: 200,
-      message: 'Usuário encontrado.',
-      data: usuario
+      message: 'Tipo Projeto encontrado.',
+      data: tipoProjeto
     }
   },
     {
       detail: { 
-        tags: ['Users'],
-        summary: 'Visualiza um Usuário',
-        description: 'Retorna um usuário específico.',
+        tags: ['Tipo Projetos'],
+        summary: 'Visualiza um Tipo Projeto',
+        description: 'Retorna um tipo projeto específico.',
         responses: {
           200: { 
             description: 'OK',
@@ -504,7 +423,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Usuário encontrado.' },
+                    message: { type: 'string', example: 'Tipo Projeto encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -519,7 +438,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 404 },
-                    message: { type: 'string', example: 'Usuário não encontrado.' },
+                    message: { type: 'string', example: 'Tipo Projeto não encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -532,17 +451,11 @@ export const usersController = new Elysia({ prefix: '/users' })
   )
 
   .get('/list', async ({ set }) : Promise<APIResponse> => {
-    // pega todos os usuarios
-    const usuarios = await prisma.usuarios.findManyAtivo({ 
+    // pega todos os tipos projetos
+    const tipoProjetos = await prisma.tipoProjetos.findManyAtivo({ 
       select : {
         id: true,
         nome: true,
-        sobrenome: true,
-        linkedin: true,
-        github: true,
-        curso: true,
-        funcao: true,
-        foto: true,
       },
       orderBy: { 
         nome: 'asc' 
@@ -552,19 +465,19 @@ export const usersController = new Elysia({ prefix: '/users' })
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna os usuarios
+    // retorna os tipos projetos
     set.status = 200;
     return {
       status: 200,
-      message: 'Usuários encontrados.',
-      data: usuarios
+      message: 'Tipo Projetos encontrados.',
+      data: tipoProjetos
     }
   },
     {
       detail: { 
-        tags: ['Users'],
-        summary: 'Listar Usuários',
-        description: 'Retorna uma lista com todos os usuários.',
+        tags: ['Tipo Projetos'],
+        summary: 'Listar Tipo Projetos',
+        description: 'Retorna uma lista com todos os tipo Projetos.',
         responses: {
           200: { 
             description: 'OK',
@@ -574,7 +487,7 @@ export const usersController = new Elysia({ prefix: '/users' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Usuários encontrados.' },
+                    message: { type: 'string', example: 'Tipo Projetos encontrados.' },
                     data: { type: 'array', items: { type: 'object' } },
                   }
                 }
