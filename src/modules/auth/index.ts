@@ -2,6 +2,7 @@ import { Elysia, t } from 'elysia';
 import { prisma } from '~libs/prisma';
 import { verificaSenha } from '~utils/hash'
 import { authMiddleware, verificaAuthUser } from '~middlewares/auth';
+import { APIResponseError } from '~utils/erros';
 
 /**
  * Controller de autenticação
@@ -10,27 +11,25 @@ export const authController = new Elysia({ prefix: '/auth' })
 
   .use(authMiddleware)
 
-  .post('/login', async ({ body: { email, password }, set, jwt, setCookie }) : Promise<APIResponse> => {
+  .post('/login', async ({ body: { email, password }, set, jwt, setCookie }) : Promise<APIResponse | APIResponseError> => {
     const usuario = await prisma.usuarios.findUnique({ where: { email } });
     // se não existir o usuário
     if (!usuario) {
-      set.status = 401;
-      return {
+      return new APIResponseError ({
         status: 401,
         message: 'Usuário e/ou senha incorretos.',
         data: null
-      }
+      });
     }
 
     // se encontrar, verifica a senha
     const senhaCorreta = await verificaSenha(password, usuario.senha);
     if (!senhaCorreta) {
-      set.status = 401;
-      return {
+      return new APIResponseError ({
         status: 401,
         message: 'Usuário e/ou senha incorretos.',
         data: null
-      }
+      });
     }
     // se a senha estiver correta, cria o token
     const token = await jwt.sign({ id: usuario.id.toString() });

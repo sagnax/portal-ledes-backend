@@ -189,7 +189,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     }
   )
 
-  .patch('/edit/:id', async ({ params, body, set, cookie, jwt, getAuthUser, verificaPermissao }) => {
+  .patch('/edit/:id', async ({ params, body, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
@@ -201,12 +201,11 @@ export const usersController = new Elysia({ prefix: '/users' })
     // verifica se o id existe
     const usuarioParaEditar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
     if (!usuarioParaEditar) {
-      set.status = 404;
-      return {
+      return new APIResponseError ({
         status: 404,
         message: 'Usuário não existe.',
         data: null
-      }
+      });
     }
 
     // salva a foto no servidor
@@ -345,7 +344,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     }
   )
 
-  .delete('/delete/:id', async ({ params, set, cookie, jwt, getAuthUser, verificaPermissao }) => {
+  .delete('/delete/:id', async ({ params, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
     // pega o usuario pelo token
     const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
     // verifica se o usuario tem permissão de Admin ou Usuarios
@@ -354,12 +353,11 @@ export const usersController = new Elysia({ prefix: '/users' })
     // verifica se o id existe
     const usuarioParaDeletar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
     if (!usuarioParaDeletar) {
-      set.status = 404;
-      return {
+      return new APIResponseError ({
         status: 404,
         message: 'Usuário não existe.',
         data: null
-      }
+      });
     }
 
     // deleta o usuario
@@ -455,7 +453,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     }
   )
 
-  .get('/view/:id', async ({ params, set }) => {
+  .get('/view/:id', async ({ params, set }) : Promise<APIResponse | APIResponseError> => {
     // pega todos os usuarios
     const usuario = await prisma.usuarios.findUniqueAtivo({ 
       select : {
@@ -474,12 +472,11 @@ export const usersController = new Elysia({ prefix: '/users' })
     });
 
     if (!usuario) {
-      set.status = 404;
-      return {
+      return new APIResponseError ({
         status: 404,
         message: 'Usuário não existe.',
         data: null
-      }
+      });
     }
 
     // desconecta do banco para não deixar a conexão aberta
@@ -534,7 +531,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     }
   )
 
-  .get('/list', async ({ set }) => {
+  .get('/list', async ({ set }) : Promise<APIResponse> => {
     // pega todos os usuarios
     const usuarios = await prisma.usuarios.findManyAtivo({ 
       select : {

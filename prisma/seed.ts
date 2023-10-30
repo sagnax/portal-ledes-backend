@@ -1,3 +1,4 @@
+import { hashSenha } from '~utils/hash';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
@@ -12,7 +13,7 @@ async function main() {
   });
 
   // Insere o usuário admin
-  const senhaAdmin = await Bun.password.hash('admin');
+  const senhaAdmin = await hashSenha('admin');
   const usuarioAdmin = await prisma.usuarios.upsert({
     where: { email: 'admin' },
     update: {},
