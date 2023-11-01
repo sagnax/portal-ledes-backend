@@ -5,6 +5,7 @@ import { authController } from '~modules/auth';
 import { usersController } from '~modules/users';
 import { tipoProjetosController } from '~modules/tipo-projetos';
 import { tipoSituacoesProjetosController } from '~modules/tipo-situacoes-projetos';
+import { tipoVinculosController } from '~modules/tipo-vinculos';
 import { APIResponseError } from '~utils/erros';
 
 
@@ -68,6 +69,7 @@ const app = new Elysia({ prefix: '/api' })
   .use(usersController)
   .use(tipoSituacoesProjetosController)
   .use(tipoProjetosController)
+  .use(tipoVinculosController)
 
   // Inicia o servidor
   .listen(2077);
