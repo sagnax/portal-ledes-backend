@@ -19,7 +19,6 @@ const prisma = new PrismaClient()
       async createManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'createMany'>['createMany'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const dataToModify = [...args.data];
-
         dataToModify.forEach((element:any, idx) => {
           element = {
             userCreatedId: authUser.id,
@@ -65,6 +64,37 @@ const prisma = new PrismaClient()
           ...args.data
         }
         return await (context as any).updateMany(args);
+      },
+    }
+  }
+})
+// Upsert Extension
+.$extends({
+  name: 'Upsert-WithAuthenticatedUser',
+  model: {
+    $allModels: {
+      /** upsertWithAuthUser -> upsert */
+      async upsertWithAuthUser<T> (this: T, args: Prisma.Args<T, 'upsert'>['upsert'], authUser: Usuarios) : Promise<T> {
+        const context = Prisma.getExtensionContext(this);
+        args.update = {
+          // userUpdatedId: authUser.id,
+          userUpdated: {
+            connect: {
+              id: authUser.id
+            }
+          },
+          ...args.update
+        }
+        args.create = {
+          // userCreatedId: authUser.id,
+          userCreated: {
+            connect: {
+              id: authUser.id
+            }
+          },
+          ...args.create
+        }
+        return await (context as any).upsert(args);
       },
     }
   }

@@ -44,6 +44,10 @@ const swaggerConfig = {
       {
         name: 'Tipo Papéis',
         description: 'Endpoints de tipos papéis'
+      },
+      {
+        name: 'Configuração Sobre Nós',
+        description: 'Endpoints de configuração sobre nós'
       }
     ]
   }

@@ -9,6 +9,8 @@ import { tipoProjetosController } from '~modules/tipo-projetos';
 import { tipoSituacoesProjetosController } from '~modules/tipo-situacoes-projetos';
 import { tipoVinculosController } from '~modules/tipo-vinculos';
 import { tipoPapeisController } from '~modules/tipo-papeis';
+// Controllers Configuração
+import { configuracaoSobreNosController } from '~modules/configuracao-sobre-nos';
 
 
 const app = new Elysia({ prefix: '/api' })
@@ -73,6 +75,8 @@ const app = new Elysia({ prefix: '/api' })
   .use(tipoProjetosController)
   .use(tipoVinculosController)
   .use(tipoPapeisController)
+  // Configuração
+  .use(configuracaoSobreNosController)
 
   // Inicia o servidor
   .listen(2077);
