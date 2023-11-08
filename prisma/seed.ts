@@ -122,6 +122,43 @@ async function main() {
     },
   });
 
+  const configuracaoSobreNos = await prisma.configuracaoSobreNos.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      descricao: 'Laboratório de Engenharia de Software',
+      endereco: 'Cidade Universitária, Campo Grande - MS',
+      coordenadorLaboratorioId: 1,
+      emailCoordenador: 'facom@ufms.br',
+      telefoneLaboratorio: '(67) 3333-3333',
+      segundaLaboratorioAbre: true,
+      horarioSegundaAbertura: '08:00',
+      horarioSegundaFechamento: '18:00',
+      tercaLaboratorioAbre: true,
+      horarioTercaAbertura: '08:00',
+      horarioTercaFechamento: '18:00',
+      quartaLaboratorioAbre: true,
+      horarioQuartaAbertura: '08:00',
+      horarioQuartaFechamento: '18:00',
+      quintaLaboratorioAbre: true,
+      horarioQuintaAbertura: '08:00',
+      horarioQuintaFechamento: '18:00',
+      sextaLaboratorioAbre: true,
+      horarioSextaAbertura: '08:00',
+      horarioSextaFechamento: '18:00',
+      sabadoLaboratorioAbre: false,
+      horarioSabadoAbertura: '',
+      horarioSabadoFechamento: '',
+      domingoLaboratorioAbre: false,
+      horarioDomingoAbertura: '',
+      horarioDomingoFechamento: '',
+      situacaoCadastroId: 1,
+      userCreatedId: 1,
+      userUpdatedId: 1,
+    },
+  });
+
   console.log({ situacaoCadastros, usuarioAdmin, usuarioTeste, usuarioTeste2, usuarioTeste3, tipoVinculos, tipoPapeis, tipoSituacoesProjetos, tipoProjetos });
 }
 

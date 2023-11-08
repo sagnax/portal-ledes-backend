@@ -89,6 +89,7 @@ model Usuarios {
 
 model Projetos {
   id                Int                    @id @default(autoincrement())
+  foto              String?
   titulo            String?
   descricao         String?
   dataInicio        DateTime?

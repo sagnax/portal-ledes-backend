@@ -20,7 +20,19 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     verificaPermissao(usuario, "PROJETOS");
 
     // pega os dados do body
-    const { titulo, dataInicio, dataTermino, descricao, coordenadorId, situacaoProjetoId, tipoProjetoId, projetoUsuarios} = body;
+    const { foto, titulo, dataInicio, dataTermino, descricao, coordenadorId, situacaoProjetoId, tipoProjetoId, projetoUsuarios } = body;
+
+    // salva a foto no servidor
+    let fotoPath = '';
+    if (foto) {
+      const tituloHash = Bun.hash(titulo);
+      fotoPath = `./public/uploads/img/projetos/${tituloHash}/${foto.name}`;
+      const fotoBuffer = await foto.arrayBuffer();
+      const uploaded = await Bun.write(fotoPath, fotoBuffer);
+    }
+    else {
+      fotoPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
+    }
 
     const inicioProjeto = new Date(dataInicio);
     const terminoProjeto = new Date(dataTermino);
@@ -28,6 +40,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     // cria o novo projeto
     const novoProjetoCriado = await prisma.projetos.createWithAuthUser({
       data: {
+        foto: fotoPath,
         titulo,
         dataInicio: inicioProjeto,
         dataTermino: terminoProjeto,
@@ -100,6 +113,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     {
       beforeHandle: verificaAuthUser,
       body: t.Object({
+        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
         titulo: t.String({default: 'Projeto A'}),
         dataInicio: t.String({default: '01/12/2023'}),
         dataTermino: t.String({default: '01/12/2023'}),
@@ -166,166 +180,233 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
                 }
               }
             } 
-          },
+          }
         }
       }
     }
   )
 
-  // .patch('/edit/:id', async ({ params, body, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
-  //   // pega o usuario pelo token
-  //   const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
-  //   // verifica se o usuario tem permissão de Admin ou Usuarios
-  //   verificaPermissao(usuario, "USUARIOS", parseInt(params.id));
+  .patch('/edit/:id', async ({ params, body, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
+    // pega o usuario pelo token
+    const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
+    // verifica se o usuario tem permissão de Admin ou Projetos
+    verificaPermissao(usuario, "PROJETOS");
 
-  //   // pega os dados do body
-  //   const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
+    // pega os dados do body
+    const { foto, titulo, dataInicio, dataTermino, descricao, coordenadorId, situacaoProjetoId, tipoProjetoId, projetoUsuarios } = body;
 
-  //   // verifica se o id existe
-  //   const usuarioParaEditar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
-  //   if (!usuarioParaEditar) {
-  //     return new APIResponseError ({
-  //       status: 404,
-  //       message: 'Usuário não existe.',
-  //       data: null
-  //     });
-  //   }
+    // verifica se o id existe
+    const projetoParaEditar = await prisma.projetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!projetoParaEditar) {
+      return new APIResponseError ({
+        status: 404,
+        message: 'Projeto não existe.',
+        data: null
+      });
+    }
 
-  //   // salva a foto no servidor
-  //   let fotoPath = '';
-  //   if (foto) {
-  //     fotoPath = `./public/uploads/img/usuarios/${email}/${foto.name}`;
-  //     const fotoBuffer = await foto.arrayBuffer();
-  //     const uploaded = await Bun.write(fotoPath, fotoBuffer);
-  //   }
-  //   else {
-  //     const hashedEmail = await hashEmail(email);
-  //     fotoPath = `https://www.gravatar.com/avatar/${hashedEmail}?d=identicon`;
-  //   }
+    // salva a foto no servidor
+    let fotoPath = '';
+    if (foto) {
+      const tituloHash = Bun.hash(titulo);
+      fotoPath = `./public/uploads/img/projetos/${tituloHash}/${foto.name}`;
+      const fotoBuffer = await foto.arrayBuffer();
+      const uploaded = await Bun.write(fotoPath, fotoBuffer);
+    }
+    else {
+      fotoPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
+    }
 
-  //   // edita o usuario
-  //   const hashedSenha = await hashSenha(password);
-  //   const usuarioEditado = await prisma.usuarios.updateWithAuthUser({
-  //     data: {
-  //       nome,
-  //       sobrenome,
-  //       // email,
-  //       senha: hashedSenha,
-  //       linkedin,
-  //       github,
-  //       curso,
-  //       funcao,
-  //       foto: fotoPath,
-  //       permissaoAdmin,
-  //       permissaoProjetos,
-  //       permissaoPublicacoes,
-  //       permissaoUsuarios,
-  //     },
-  //     where: {
-  //       id: parseInt(params.id)
-  //     }
-  //   },
-  //     usuario
-  //   );
+    const inicioProjeto = new Date(dataInicio);
+    const terminoProjeto = new Date(dataTermino);
 
-  //   // desconecta do banco para não deixar a conexão aberta
-  //   await prisma.$disconnect();
+    // edita o projeto
+    const projetoEditado = await prisma.projetos.updateWithAuthUser({
+      data: {
+        foto: fotoPath,
+        titulo,
+        dataInicio: inicioProjeto,
+        dataTermino: terminoProjeto,
+        descricao,
+        coordenador: {
+          connect: {
+            id: coordenadorId,
+          }
+        },
+        situacaoProjeto: {
+          connect: {
+            id: situacaoProjetoId,
+          }
+        },
+        tipoProjeto: {
+          connect: {
+            id: tipoProjetoId,
+          }
+        }
+      },
+      where: {
+        id: parseInt(params.id)
+      }
+    },
+      usuario
+    ) as unknown as Projetos; // Conversão do tipo para poder acessar as propriedades do Projeto
 
-  //   // retorna o usuario editado
-  //   set.status = 200;
-  //   return {
-  //     status: 200,
-  //     message: 'Usuário editado com sucesso.',
-  //     data: usuarioEditado
-  //   }
-  // },
-  //   {
-  //     beforeHandle: verificaAuthUser,
-  //     body: t.Object({
-  //       nome: t.Optional(t.String()),
-  //       sobrenome: t.Optional(t.String()),
-  //       email: t.String(),
-  //       password: t.String(),
-  //       linkedin: t.Optional(t.String()),
-  //       github: t.Optional(t.String()),
-  //       curso: t.Optional(t.String()),
-  //       funcao: t.Optional(t.Integer()),
-  //       foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
-  //       permissaoAdmin: t.Optional(t.Boolean()),
-  //       permissaoProjetos: t.Optional(t.Boolean()),
-  //       permissaoPublicacoes: t.Optional(t.Boolean()),
-  //       permissaoUsuarios: t.Optional(t.Boolean()),
-  //     }),
-  //     detail: { 
-  //       tags: ['Users'],
-  //       summary: 'Editar Usuário',
-  //       description: 'Edita e retorna os dados do usuário.',
-  //       security: [{ cookieAuth: [] }],
-  //       responses: {
-  //         200: {
-  //           description: 'OK.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 200 },
-  //                   message: { type: 'string', example: 'Usuário editado com sucesso.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         },
-  //         401: { 
-  //           description: 'Unauthorized.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 401 },
-  //                   message: { type: 'string', example: 'Não autorizado.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           } 
-  //         },
-  //         403: { 
-  //           description: 'Forbidden.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 403 },
-  //                   message: { type: 'string', example: 'Usuário sem permissão.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           } 
-  //         },
-  //         404: { 
-  //           description: 'Not Found.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 404 },
-  //                   message: { type: 'string', example: 'Usuário não encontrado.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           } 
-  //         },
-  //       }
-  //     }
-  //   }
-  // )
+    // busca os usuarios desse projeto, e atualiza eles conforme o que foi passado no body
+    const projetoUsuariosAtuais = await prisma.projeto_Usuarios.findManyAtivo({
+      where: {
+        projetoId: parseInt(params.id)
+      }
+    });
+    projetoUsuariosAtuais.forEach(async (projetoUsuarioAtual) => {
+      let projetoUsuarioEditado = await prisma.projeto_Usuarios.upsertWithAuthUser({
+        
+        data: {
+          membroAtivo: false,
+        },
+        where: {
+          id: projetoUsuarioAtual.id
+        }
+      },
+        usuario
+      );
+    });
+
+
+    // adiciona os membros ao projeto
+    // let projetoUsuariosCriados = [];
+    // projetoUsuarios.forEach(async ({usuarioId, tipoVinculoId, tipoPapelId, membroAtivo}) => {
+    //   let projetoUsuarioCriado = await prisma.projeto_Usuarios.createWithAuthUser({
+    //     data: {
+    //       projeto: {
+    //         connect: {
+    //           id: projetoEditado.id,
+    //         }
+    //       },
+    //       usuario: {
+    //         connect: {
+    //           id: usuarioId,
+    //         }
+    //       },
+    //       tipoVinculo: {
+    //         connect: {
+    //           id: tipoVinculoId,
+    //         }
+    //       },
+    //       tipoPapel: {
+    //         connect: {
+    //           id: tipoPapelId,
+    //         }
+    //       },
+    //       dataEntrada: inicioProjeto,
+    //       membroAtivo: membroAtivo,
+    //     }
+    //   },
+    //     usuario
+    //   );
+    //   projetoUsuariosCriados.push(projetoUsuarioCriado);
+    // });
+
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
+
+    // retorna o usuario editado
+    set.status = 200;
+    return {
+      status: 200,
+      message: 'Usuário editado com sucesso.',
+      data: {}
+    }
+  },
+    {
+      beforeHandle: verificaAuthUser,
+      body: t.Object({
+        foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
+        titulo: t.String({default: 'Projeto A'}),
+        dataInicio: t.String({default: '01/12/2023'}),
+        dataTermino: t.String({default: '01/12/2023'}),
+        descricao: t.String({default: 'Projeto A sobre Tal Coisa'}),
+        coordenadorId: t.Integer(),
+        situacaoProjetoId: t.Integer(),
+        tipoProjetoId: t.Integer(),
+        projetoUsuarios: t.Array(
+          t.Object({
+            usuarioId: t.Integer(),
+            tipoVinculoId: t.Integer(),
+            tipoPapelId: t.Integer(),
+            membroAtivo: t.Boolean(),
+          })
+        ),
+      }),
+      detail: { 
+        tags: ['Users'],
+        summary: 'Editar Usuário',
+        description: 'Edita e retorna os dados do usuário.',
+        security: [{ cookieAuth: [] }],
+        responses: {
+          200: {
+            description: 'OK.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Usuário editado com sucesso.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            }
+          },
+          401: { 
+            description: 'Unauthorized.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 401 },
+                    message: { type: 'string', example: 'Não autorizado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          403: { 
+            description: 'Forbidden.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 403 },
+                    message: { type: 'string', example: 'Usuário sem permissão.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          404: { 
+            description: 'Not Found.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 404 },
+                    message: { type: 'string', example: 'Usuário não encontrado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+        }
+      }
+    }
+  )
 
   // .delete('/delete/:id', async ({ params, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
   //   // pega o usuario pelo token
