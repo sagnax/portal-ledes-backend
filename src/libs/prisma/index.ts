@@ -10,7 +10,11 @@ const prisma = new PrismaClient()
       async createWithAuthUser<T> (this: T, args: Prisma.Args<T, 'create'>['create'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.data = {
-          userCreatedId: authUser.id,
+          userCreated: {
+            connect: {
+              id: authUser.id
+            }
+          },
           ...args.data
         }
         return await (context as any).create(args);
@@ -21,7 +25,11 @@ const prisma = new PrismaClient()
         const dataToModify = [...args.data];
         dataToModify.forEach((element:any, idx) => {
           element = {
-            userCreatedId: authUser.id,
+            userCreated: {
+              connect: {
+                id: authUser.id
+              }
+            },
             ...element
           }
           dataToModify[idx] = element;

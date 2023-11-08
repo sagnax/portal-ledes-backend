@@ -12,6 +12,46 @@ async function main() {
     skipDuplicates: true,
   });
 
+  const tipoVinculos = await prisma.tipoVinculos.createMany({
+    data: [
+      { id: 1, nome: 'Aluno', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 2, nome: 'Professor', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 3, nome: 'Pesquisador', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 4, nome: 'Colaborador', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 5, nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+    ],
+    skipDuplicates: true,
+  });
+
+  const tipoPapeis = await prisma.tipoPapeis.createMany({
+    data: [
+      { id: 1, nome: 'Analista', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 2, nome: 'Front-End', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 3, nome: 'Back-End', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 4, nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+    ],
+    skipDuplicates: true,
+  });
+
+  const tipoSituacoesProjetos = await prisma.tipoSituacoesProjetos.createMany({
+    data: [
+      { id: 1, nome: 'Em andamento', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 2, nome: 'Concluído', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 3, nome: 'Cancelado', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+    ],
+    skipDuplicates: true,
+  });
+
+  const tipoProjetos = await prisma.tipoProjetos.createMany({
+    data: [
+      { id: 1, nome: 'Pesquisa', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 2, nome: 'Extensão', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 3, nome: 'Ensino', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { id: 4, nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+    ],
+    skipDuplicates: true,
+  });
+
   // Insere o usuário admin
   const senhaAdmin = await hashSenha('admin');
   const usuarioAdmin = await prisma.usuarios.upsert({
@@ -30,7 +70,59 @@ async function main() {
     },
   });
 
-  console.log({ situacaoCadastros, usuarioAdmin });
+  // insere 3 usuarios de teste
+  const senhaTeste = await hashSenha('lucas');
+  const usuarioTeste = await prisma.usuarios.upsert({
+    where: { email: 'lucas' },
+    update: {},
+    create: {
+      id: 2,
+      nome: 'Lucas',
+      email: 'lucas',
+      senha: senhaTeste,
+      permissaoAdmin: false,
+      permissaoUsuarios: false,
+      permissaoProjetos: false,
+      permissaoPublicacoes: false,
+      situacaoCadastroId: 1,
+    },
+  });
+
+  const senhaTeste2 = await hashSenha('tiago');
+  const usuarioTeste2 = await prisma.usuarios.upsert({
+    where: { email: 'tiago' },
+    update: {},
+    create: {
+      id: 3,
+      nome: 'Tiago',
+      email: 'tiago',
+      senha: senhaTeste2,
+      permissaoAdmin: false,
+      permissaoUsuarios: false,
+      permissaoProjetos: false,
+      permissaoPublicacoes: false,
+      situacaoCadastroId: 1,
+    },
+  });
+
+  const senhaTeste3 = await hashSenha('guilherme');
+  const usuarioTeste3 = await prisma.usuarios.upsert({
+    where: { email: 'guilherme' },
+    update: {},
+    create: {
+      id: 4,
+      nome: 'Guilherme',
+      email: 'guilherme',
+      senha: senhaTeste3,
+      permissaoAdmin: false,
+      permissaoUsuarios: false,
+      permissaoProjetos: false,
+      permissaoPublicacoes: false,
+      situacaoCadastroId: 1,
+    },
+  });
+
+  console.log({ situacaoCadastros, usuarioAdmin, usuarioTeste, usuarioTeste2, usuarioTeste3, tipoVinculos, tipoPapeis, tipoSituacoesProjetos, tipoProjetos });
 }
 
 await main()

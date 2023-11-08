@@ -5,6 +5,7 @@ import { APIResponseError } from '~utils/erros';
 // Controllers Imports
 import { authController } from '~modules/auth';
 import { usersController } from '~modules/users';
+import { projetosController } from '~modules/projetos';
 import { tipoProjetosController } from '~modules/tipo-projetos';
 import { tipoSituacoesProjetosController } from '~modules/tipo-situacoes-projetos';
 import { tipoVinculosController } from '~modules/tipo-vinculos';
@@ -71,6 +72,7 @@ const app = new Elysia({ prefix: '/api' })
   // Controladores das rotas
   .use(authController)
   .use(usersController)
+  .use(projetosController)
   .use(tipoSituacoesProjetosController)
   .use(tipoProjetosController)
   .use(tipoVinculosController)
