@@ -63,12 +63,7 @@ const prisma = new PrismaClient()
       async updateManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'updateMany'>['updateMany'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.data = {
-          // userUpdatedId: authUser.id,
-          userUpdated: {
-            connect: {
-              id: authUser.id
-            }
-          },
+          userUpdatedId: authUser.id,
           ...args.data
         }
         return await (context as any).updateMany(args);
@@ -112,7 +107,7 @@ const prisma = new PrismaClient()
   name: 'Find-FilteredBySituacaoCadastro',
   model: {
     $allModels: {
-      /** findFirstAtivo -> findFirst */
+      /** findFirstAtivo -> findFirst com situacaoCadastroId = 1 */
       async findFirstAtivo<T> (this: T, args: Prisma.Args<T, 'findFirst'>['findFirst']) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.where = {
@@ -121,7 +116,7 @@ const prisma = new PrismaClient()
         }
         return await (context as any).findFirst(args);
       },
-      /** findUniqueAtivo -> findUnique */
+      /** findUniqueAtivo -> findUnique com situacaoCadastroId = 1 */
       async findUniqueAtivo<T> (this: T, args: Prisma.Args<T, 'findUnique'>['findUnique']) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         args.where = {
@@ -130,7 +125,7 @@ const prisma = new PrismaClient()
         }
         return await (context as any).findUnique(args);
       },
-      /** findManyAtivo -> findMany */
+      /** findManyAtivo -> findMany com situacaoCadastroId = 1*/
       async findManyAtivo<T> (this: T, args: Prisma.Args<T, 'findMany'>['findMany']) : Promise<T[]> {
         const context = Prisma.getExtensionContext(this);
         args.where = {
@@ -152,6 +147,7 @@ const prisma = new PrismaClient()
   name: 'Find-WithPagination',
   model: {
     $allModels: {
+      /** findManyWithPagination -> findMany com paginação */
       async findManyWithPagination<T> (this: T, args: Prisma.Args<T, 'findMany'>['findMany'], page: number, limit: number) : Promise<T[]> {
         const context = Prisma.getExtensionContext(this);
         args.skip = (page - 1) * limit;
@@ -162,6 +158,7 @@ const prisma = new PrismaClient()
         }
         return await (context as any).findMany(args);
       },
+      /** findManyAtivoWithPagination -> findMany com situacaoCadastroId = 1, e paginação */
       async findManyAtivoWithPagination<T> (this: T, args: Prisma.Args<T, 'findMany'>['findMany'], page: number, limit: number) : Promise<T[]> {
         const context = Prisma.getExtensionContext(this);
         args.skip = (page - 1) * limit;
@@ -184,6 +181,7 @@ const prisma = new PrismaClient()
   name: 'SoftDelete',
   model: {
     $allModels: {
+      /** deleteWithAuthUser -> update com situacaoCadastroId = 2 e userUpdatedId = authUser  */
       async deleteWithAuthUser<T> (this: T, args: Prisma.Args<T, 'delete'>['delete'], authUser: Usuarios) : Promise<T> {
         const context = Prisma.getExtensionContext(this);
         const data = {
@@ -192,27 +190,32 @@ const prisma = new PrismaClient()
             connect: {
               id: 2
             }
-          }
-        }
-        const where = {
-          ...args.where
-        }
-        return await (context as any).updateWithAuthUser({data, where}, authUser);
-      },
-      async deleteManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'deleteMany'>['deleteMany'], authUser: Usuarios) : Promise<T> {
-        const context = Prisma.getExtensionContext(this);
-        const data = {
-          // situacaoCadastroId: 2,
-          situacaoCadastro: {
+          },
+          userUpdated: {
             connect: {
-              id: 2
+              id: authUser.id
             }
           }
         }
+        args.data = data;
         const where = {
           ...args.where
         }
-        return await (context as any).updateManyWithAuthUser({data, where}, authUser);
+        args.where = where;
+        return await (context as any).update(args);
+      },
+      /** deleteManyWithAuthUser -> updateMany com situacaoCadastroId = 2 e userUpdatedId = authUser */
+      async deleteManyWithAuthUser<T> (this: T, args: Prisma.Args<T, 'deleteMany'>['deleteMany'], authUser: Usuarios) : Promise<T> {
+        const context = Prisma.getExtensionContext(this);
+        args.data = {
+          situacaoCadastroId: 2,
+          userUpdatedId: authUser.id,
+          ...args.data
+        }
+        args.where = {
+          ...args.where
+        }
+        return await (context as any).updateMany(args);
       },
     }
   }

@@ -442,251 +442,335 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     }
   )
 
-  // .delete('/delete/:id', async ({ params, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
-  //   // pega o usuario pelo token
-  //   const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
-  //   // verifica se o usuario tem permissão de Admin ou Usuarios
-  //   verificaPermissao(usuario, "USUARIOS");
+  .delete('/delete/:id', async ({ params, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
+    // pega o usuario pelo token
+    const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
+    // verifica se o usuario tem permissão de Admin ou Projetos
+    verificaPermissao(usuario, "PROJETOS");
 
-  //   // verifica se o id existe
-  //   const usuarioParaDeletar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
-  //   if (!usuarioParaDeletar) {
-  //     return new APIResponseError ({
-  //       status: 404,
-  //       message: 'Usuário não existe.',
-  //       data: null
-  //     });
-  //   }
+    // verifica se o id existe
+    const projetoParaDeletar = await prisma.projetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    if (!projetoParaDeletar) {
+      return new APIResponseError ({
+        status: 404,
+        message: 'Projeto não existe.',
+        data: null
+      });
+    }
 
-  //   // deleta o usuario
-  //   const usuarioDeletado = await prisma.usuarios.deleteWithAuthUser({
-  //     where: {
-  //       id: parseInt(params.id)
-  //     }
-  //   },
-  //     usuario
-  //   );
+    // deleta todos os usuarios do projeto
+    const projetoUsuariosDeletados = await prisma.projeto_Usuarios.deleteManyWithAuthUser({
+      where: {
+        projetoId: parseInt(params.id)
+      }
+    },
+      usuario
+    );
 
-  //   // desconecta do banco para não deixar a conexão aberta
-  //   await prisma.$disconnect();
+    // deleta o projeto
+    const projetoDeletado = await prisma.projetos.deleteWithAuthUser({
+      where: {
+        id: parseInt(params.id)
+      }
+    },
+      usuario
+    );
 
-  //   // retorna
-  //   set.status = 200;
-  //   return {
-  //     status: 200,
-  //     message: 'Usuário deletado com sucesso.',
-  //     data: null
-  //   }
-  // },
-  //   {
-  //     beforeHandle: verificaAuthUser,
-  //     detail: { 
-  //       tags: ['Users'],
-  //       summary: 'Deletar Usuário',
-  //       description: 'Deleta o usuário do sistema (Soft Delete).',
-  //       security: [{ cookieAuth: [] }],
-  //       responses: {
-  //         200: {
-  //           description: 'OK.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 200 },
-  //                   message: { type: 'string', example: 'Usuário deletado com sucesso.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         },
-  //         401: { 
-  //           description: 'Unauthorized.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 401 },
-  //                   message: { type: 'string', example: 'Não autorizado.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           } 
-  //         },
-  //         403: { 
-  //           description: 'Forbidden.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 403 },
-  //                   message: { type: 'string', example: 'Usuário sem permissão.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           } 
-  //         },
-  //         404: { 
-  //           description: 'Not Found.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 404 },
-  //                   message: { type: 'string', example: 'Usuário não encontrado.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           } 
-  //         },
-  //       }
-  //     }
-  //   }
-  // )
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
 
-  // .get('/view/:id', async ({ params, set }) : Promise<APIResponse | APIResponseError> => {
-  //   // pega todos os usuarios
-  //   const usuario = await prisma.usuarios.findUniqueAtivo({ 
-  //     select : {
-  //       id: true,
-  //       nome: true,
-  //       sobrenome: true,
-  //       linkedin: true,
-  //       github: true,
-  //       curso: true,
-  //       funcao: true,
-  //       foto: true,
-  //     },
-  //     where: {
-  //       id: parseInt(params.id)
-  //     }
-  //   });
+    // retorna
+    set.status = 200;
+    return {
+      status: 200,
+      message: 'Projeto deletado com sucesso.',
+      data: null
+    }
+  },
+    {
+      beforeHandle: verificaAuthUser,
+      detail: { 
+        tags: ['Projetos'],
+        summary: 'Deletar Projeto',
+        description: 'Deleta o projeto do sistema (Soft Delete).',
+        security: [{ cookieAuth: [] }],
+        responses: {
+          200: {
+            description: 'OK.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Projeto deletado com sucesso.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            }
+          },
+          401: { 
+            description: 'Unauthorized.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 401 },
+                    message: { type: 'string', example: 'Não autorizado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          403: { 
+            description: 'Forbidden.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 403 },
+                    message: { type: 'string', example: 'Usuário sem permissão.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          404: { 
+            description: 'Not Found.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 404 },
+                    message: { type: 'string', example: 'Projeto não encontrado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+        }
+      }
+    }
+  )
 
-  //   if (!usuario) {
-  //     return new APIResponseError ({
-  //       status: 404,
-  //       message: 'Usuário não existe.',
-  //       data: null
-  //     });
-  //   }
+  .get('/view/:id', async ({ params, set }) : Promise<APIResponse | APIResponseError> => {
+    // pega o projeto pelo id
+    const projeto = await prisma.projetos.findUniqueAtivo({ 
+      select : {
+        foto: true,
+        titulo: true,
+        descricao: true,
+        dataInicio: true,
+        dataTermino: true,
+        coordenador: {
+          select: {
+            id: true,
+            nome: true,
+            foto: true,
+          }
+        },
+        situacaoProjeto: {
+          select: {
+            id: true,
+            nome: true,
+          }
+        },
+        tipoProjeto: {
+          select: {
+            id: true,
+            nome: true,
+          }
+        },
+        projetoUsuarios: {
+          select: {
+            id: true,
+            membroAtivo: true,
+            tipoVinculo: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            tipoPapel: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            usuario: {
+              select: {
+                id: true,
+                nome: true,
+                foto: true,
+              }
+            }
+          }
+        }
+      },
+      where: {
+        id: parseInt(params.id)
+      }
+    });
 
-  //   // desconecta do banco para não deixar a conexão aberta
-  //   await prisma.$disconnect();
+    if (!projeto) {
+      return new APIResponseError ({
+        status: 404,
+        message: 'Projeto não existe.',
+        data: null
+      });
+    }
 
-  //   // retorna os usuarios
-  //   set.status = 200;
-  //   return {
-  //     status: 200,
-  //     message: 'Usuário encontrado.',
-  //     data: usuario
-  //   }
-  // },
-  //   {
-  //     detail: { 
-  //       tags: ['Users'],
-  //       summary: 'Visualiza um Usuário',
-  //       description: 'Retorna um usuário específico.',
-  //       responses: {
-  //         200: { 
-  //           description: 'OK',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 200 },
-  //                   message: { type: 'string', example: 'Usuário encontrado.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         },
-  //         404: { 
-  //           description: 'Not Found.',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 404 },
-  //                   message: { type: 'string', example: 'Usuário não encontrado.' },
-  //                   data: { type: 'object' },
-  //                 }
-  //               }
-  //             }
-  //           } 
-  //         },
-  //       },
-  //     }
-  //   }
-  // )
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
 
-  // .get('/list', async ({ set }) : Promise<APIResponse> => {
-  //   // pega todos os usuarios
-  //   const usuarios = await prisma.usuarios.findManyAtivo({ 
-  //     select : {
-  //       id: true,
-  //       nome: true,
-  //       sobrenome: true,
-  //       linkedin: true,
-  //       github: true,
-  //       curso: true,
-  //       funcao: true,
-  //       foto: true,
-  //     },
-  //     orderBy: { 
-  //       nome: 'asc' 
-  //     } 
-  //   });
+    // retorna o projeto
+    set.status = 200;
+    return {
+      status: 200,
+      message: 'Projeto encontrado.',
+      data: projeto
+    }
+  },
+    {
+      detail: { 
+        tags: ['Projetos'],
+        summary: 'Visualiza um Projeto',
+        description: 'Retorna um projeto específico.',
+        responses: {
+          200: { 
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Projeto encontrado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            }
+          },
+          404: { 
+            description: 'Not Found.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 404 },
+                    message: { type: 'string', example: 'Projeto não encontrado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+        },
+      }
+    }
+  )
 
-  //   // desconecta do banco para não deixar a conexão aberta
-  //   await prisma.$disconnect();
+  .get('/list', async ({ set }) : Promise<APIResponse> => {
+    // pega todos os projetos
+    const projetos = await prisma.projetos.findManyAtivo({ 
+      select : {
+        foto: true,
+        titulo: true,
+        descricao: true,
+        dataInicio: true,
+        dataTermino: true,
+        coordenador: {
+          select: {
+            id: true,
+            nome: true,
+            foto: true,
+          }
+        },
+        situacaoProjeto: {
+          select: {
+            id: true,
+            nome: true,
+          }
+        },
+        tipoProjeto: {
+          select: {
+            id: true,
+            nome: true,
+          }
+        },
+        projetoUsuarios: {
+          select: {
+            id: true,
+            membroAtivo: true,
+            tipoVinculo: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            tipoPapel: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            usuario: {
+              select: {
+                id: true,
+                nome: true,
+                foto: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: { 
+        id: 'asc' 
+      } 
+    });
 
-  //   // retorna os usuarios
-  //   set.status = 200;
-  //   return {
-  //     status: 200,
-  //     message: 'Usuários encontrados.',
-  //     data: usuarios
-  //   }
-  // },
-  //   {
-  //     detail: { 
-  //       tags: ['Users'],
-  //       summary: 'Listar Usuários',
-  //       description: 'Retorna uma lista com todos os usuários.',
-  //       responses: {
-  //         200: { 
-  //           description: 'OK',
-  //           content: {
-  //             'application/json': {
-  //               schema: {
-  //                 type: 'object',
-  //                 properties: {
-  //                   status: { type: 'number', example: 200 },
-  //                   message: { type: 'string', example: 'Usuários encontrados.' },
-  //                   data: { type: 'array', items: { type: 'object' } },
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         },
-  //       },
-  //     }
-  //   }
-  // )
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
 
-type projetoUsuarioType = {
-  usuarioId: number;
-  tipoVinculoId: number;
-  tipoPapelId: number;
-  membroAtivo: boolean;
-} | undefined;
+    // retorna os usuarios
+    set.status = 200;
+    return {
+      status: 200,
+      message: 'Projetos encontrados.',
+      data: projetos
+    }
+  },
+    {
+      detail: { 
+        tags: ['Projetos'],
+        summary: 'Listar Projetos',
+        description: 'Retorna uma lista com todos os projetos.',
+        responses: {
+          200: { 
+            description: 'OK',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Projetos encontrados.' },
+                    data: { type: 'array', items: { type: 'object' } },
+                  }
+                }
+              }
+            }
+          },
+        },
+      }
+    }
+  )
