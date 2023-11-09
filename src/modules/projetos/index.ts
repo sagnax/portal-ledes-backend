@@ -3,7 +3,7 @@ import { prisma } from '~libs/prisma';
 import { hashSenha, hashEmail } from '~utils/hash'
 import { validadorSenha, validadorEmail } from '~utils/validadores'
 import { authMiddleware, verificaAuthUser } from '~middlewares/auth';
-import { Projetos, Usuarios } from '@prisma/client';
+import { Projeto_Usuarios, Projetos, Usuarios } from '@prisma/client';
 import { APIResponseError } from '~utils/erros';
 
 /**
@@ -38,7 +38,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     const terminoProjeto = new Date(dataTermino);
 
     // cria o novo projeto
-    const novoProjetoCriado = await prisma.projetos.createWithAuthUser({
+    const projetoCriado = await prisma.projetos.createWithAuthUser({
       data: {
         foto: fotoPath,
         titulo,
@@ -66,38 +66,39 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     ) as unknown as Projetos; // Conversão do tipo para poder acessar as propriedades do Projeto
 
     // adiciona os membros ao projeto
-    let projetoUsuariosCriados = [];
-    projetoUsuarios.forEach(async ({usuarioId, tipoVinculoId, tipoPapelId, membroAtivo}) => {
+    let projetoUsuariosCriados: Projeto_Usuarios[] = [];
+    for (let i = 0; i < projetoUsuarios.length; i++) {
+      let projetoUsuario = projetoUsuarios[i];
       let projetoUsuarioCriado = await prisma.projeto_Usuarios.createWithAuthUser({
         data: {
           projeto: {
             connect: {
-              id: novoProjetoCriado.id,
+              id: projetoCriado.id,
             }
           },
           usuario: {
             connect: {
-              id: usuarioId,
+              id: projetoUsuario.usuarioId,
             }
           },
           tipoVinculo: {
             connect: {
-              id: tipoVinculoId,
+              id: projetoUsuario.tipoVinculoId,
             }
           },
           tipoPapel: {
             connect: {
-              id: tipoPapelId,
+              id: projetoUsuario.tipoPapelId,
             }
           },
           dataEntrada: inicioProjeto,
-          membroAtivo: membroAtivo,
+          membroAtivo: projetoUsuario.membroAtivo,
         }
       },
         usuario
-      );
+      ) as unknown as Projeto_Usuarios;
       projetoUsuariosCriados.push(projetoUsuarioCriado);
-    });
+    }
 
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
@@ -107,17 +108,20 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     return {
       status: 201,
       message: 'Projeto criado com sucesso.',
-      data: novoProjetoCriado
+      data: {
+        projetoCriado,
+        projetoUsuariosCriados
+      }
     }
   },
     {
       beforeHandle: verificaAuthUser,
       body: t.Object({
         foto: t.Optional(t.File({ maxSize: 1024 * 1024 * 2, mimetype: ['image/png', 'image/jpg', 'image/jpeg'] })),
-        titulo: t.String({default: 'Projeto A'}),
-        dataInicio: t.String({default: '01/12/2023'}),
-        dataTermino: t.String({default: '01/12/2023'}),
-        descricao: t.String({default: 'Projeto A sobre Tal Coisa'}),
+        titulo: t.String({ default: 'Projeto A' }),
+        dataInicio: t.String({ default: '01/12/2023' }),
+        dataTermino: t.String({ default: '01/12/2023' }),
+        descricao: t.String({ default: 'Projeto A sobre Tal Coisa' }),
         coordenadorId: t.Integer(),
         situacaoProjetoId: t.Integer(),
         tipoProjetoId: t.Integer(),
@@ -193,7 +197,9 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     verificaPermissao(usuario, "PROJETOS");
 
     // pega os dados do body
-    const { foto, titulo, dataInicio, dataTermino, descricao, coordenadorId, situacaoProjetoId, tipoProjetoId, projetoUsuarios } = body;
+    const { foto, titulo, dataInicio, dataTermino, descricao, coordenadorId, situacaoProjetoId, tipoProjetoId } = body;
+    // pega separado para poder iterar
+    let { projetoUsuarios } = body;
 
     // verifica se o id existe
     const projetoParaEditar = await prisma.projetos.findUniqueAtivo({ where: { id: parseInt(params.id) } });
@@ -249,72 +255,100 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
       }
     },
       usuario
-    ) as unknown as Projetos; // Conversão do tipo para poder acessar as propriedades do Projeto
+    ) as unknown as Projetos; // Conversão do tipo para poder acessar as propriedades
 
-    // busca os usuarios desse projeto, e atualiza eles conforme o que foi passado no body
+    // busca todos os usuários atuais do projeto
     const projetoUsuariosAtuais = await prisma.projeto_Usuarios.findManyAtivo({
       where: {
         projetoId: parseInt(params.id)
       }
-    });
-    projetoUsuariosAtuais.forEach(async (projetoUsuarioAtual) => {
-      let projetoUsuarioEditado = await prisma.projeto_Usuarios.upsertWithAuthUser({
-        
-        data: {
-          membroAtivo: false,
+    }) as unknown as Projeto_Usuarios[]; // Conversão do tipo para poder acessar as propriedades
+
+    // iteramos entre todos os usuários atuais do projeto
+    let projetoUsuariosEditados: Projeto_Usuarios[] = [];
+    let projetoUsuariosDeletados: Projeto_Usuarios[] = [];
+    for (let i = 0; i < projetoUsuariosAtuais.length; i++) {
+      let projetoUsuarioAtual = projetoUsuariosAtuais[i];
+      // para cada usuário atual, verificamos se ele está na lista de usuários do body com aquela configuração de papel e vinculo
+      let projetoUsuario: projetoUsuarioType = projetoUsuarios.find(projetoUsuario => projetoUsuario.usuarioId === projetoUsuarioAtual.usuarioId && projetoUsuario.tipoVinculoId === projetoUsuarioAtual.tipoVinculoId && projetoUsuario.tipoPapelId === projetoUsuarioAtual.tipoPapelId);
+      // se achou, atualiza o usuário
+      if (projetoUsuario) {
+        let projetoUsuarioEditado = await prisma.projeto_Usuarios.updateWithAuthUser({
+          data: {
+            membroAtivo: projetoUsuario.membroAtivo,
+          },
+          where: {
+            id: projetoUsuarioAtual.id
+          }
         },
-        where: {
-          id: projetoUsuarioAtual.id
+          usuario
+        ) as unknown as Projeto_Usuarios;
+        projetoUsuariosEditados.push(projetoUsuarioEditado);
+        // remove o usuário da lista de usuários do body
+        projetoUsuarios.splice(projetoUsuarios.indexOf(projetoUsuario), 1);
+      }
+      // se não achou, deleta o usuário
+      else {
+        let projetoUsuarioDeletado = await prisma.projeto_Usuarios.deleteWithAuthUser({
+          where: {
+            id: projetoUsuarioAtual.id
+          }
+        },
+          usuario
+        ) as unknown as Projeto_Usuarios;
+        projetoUsuariosDeletados.push(projetoUsuarioDeletado);
+      }
+    }
+
+    // adiciona os usuários restantes ao projeto
+    let projetoUsuariosCriados: Projeto_Usuarios[] = [];
+    for (let i = 0; i < projetoUsuarios.length; i++) {
+      let projetoUsuario = projetoUsuarios[i];
+      let projetoUsuarioCriado = await prisma.projeto_Usuarios.createWithAuthUser({
+        data: {
+          projeto: {
+            connect: {
+              id: projetoEditado.id,
+            }
+          },
+          usuario: {
+            connect: {
+              id: projetoUsuario.usuarioId,
+            }
+          },
+          tipoVinculo: {
+            connect: {
+              id: projetoUsuario.tipoVinculoId,
+            }
+          },
+          tipoPapel: {
+            connect: {
+              id: projetoUsuario.tipoPapelId,
+            }
+          },
+          dataEntrada: new Date(),
+          membroAtivo: projetoUsuario.membroAtivo,
         }
       },
         usuario
-      );
-    });
-
-
-    // adiciona os membros ao projeto
-    // let projetoUsuariosCriados = [];
-    // projetoUsuarios.forEach(async ({usuarioId, tipoVinculoId, tipoPapelId, membroAtivo}) => {
-    //   let projetoUsuarioCriado = await prisma.projeto_Usuarios.createWithAuthUser({
-    //     data: {
-    //       projeto: {
-    //         connect: {
-    //           id: projetoEditado.id,
-    //         }
-    //       },
-    //       usuario: {
-    //         connect: {
-    //           id: usuarioId,
-    //         }
-    //       },
-    //       tipoVinculo: {
-    //         connect: {
-    //           id: tipoVinculoId,
-    //         }
-    //       },
-    //       tipoPapel: {
-    //         connect: {
-    //           id: tipoPapelId,
-    //         }
-    //       },
-    //       dataEntrada: inicioProjeto,
-    //       membroAtivo: membroAtivo,
-    //     }
-    //   },
-    //     usuario
-    //   );
-    //   projetoUsuariosCriados.push(projetoUsuarioCriado);
-    // });
+      ) as unknown as Projeto_Usuarios;
+      projetoUsuariosCriados.push(projetoUsuarioCriado);
+    }
 
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
 
-    // retorna o usuario editado
+    // retorna o projeto editado
     set.status = 200;
     return {
       status: 200,
-      message: 'Usuário editado com sucesso.',
-      data: {}
+      message: 'Projeto editado com sucesso.',
+      data: {
+        projetoEditado,
+        projetoUsuariosEditados,
+        projetoUsuariosDeletados,
+        projetoUsuariosCriados
+      }
     }
   },
     {
@@ -338,9 +372,9 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
         ),
       }),
       detail: { 
-        tags: ['Users'],
-        summary: 'Editar Usuário',
-        description: 'Edita e retorna os dados do usuário.',
+        tags: ['Projetos'],
+        summary: 'Editar Projeto',
+        description: 'Edita e retorna os dados do projeto.',
         security: [{ cookieAuth: [] }],
         responses: {
           200: {
@@ -351,7 +385,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 200 },
-                    message: { type: 'string', example: 'Usuário editado com sucesso.' },
+                    message: { type: 'string', example: 'Projeto editado com sucesso.' },
                     data: { type: 'object' },
                   }
                 }
@@ -396,7 +430,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
                   type: 'object',
                   properties: {
                     status: { type: 'number', example: 404 },
-                    message: { type: 'string', example: 'Usuário não encontrado.' },
+                    message: { type: 'string', example: 'Projeto não encontrado.' },
                     data: { type: 'object' },
                   }
                 }
@@ -649,3 +683,10 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
   //     }
   //   }
   // )
+
+type projetoUsuarioType = {
+  usuarioId: number;
+  tipoVinculoId: number;
+  tipoPapelId: number;
+  membroAtivo: boolean;
+} | undefined;
