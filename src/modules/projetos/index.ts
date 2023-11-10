@@ -1,7 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { prisma } from '~libs/prisma';
-import { hashSenha, hashEmail } from '~utils/hash'
-import { validadorSenha, validadorEmail } from '~utils/validadores'
+import { hashTexto } from '~utils/hash'
 import { authMiddleware, verificaAuthUser } from '~middlewares/auth';
 import { Projeto_Usuarios, Projetos, Usuarios } from '@prisma/client';
 import { APIResponseError } from '~utils/erros';
@@ -25,7 +24,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     // salva a foto no servidor
     let fotoPath = '';
     if (foto) {
-      const tituloHash = Bun.hash(titulo);
+      const tituloHash = await hashTexto(titulo);
       fotoPath = `./public/uploads/img/projetos/${tituloHash}/${foto.name}`;
       const fotoBuffer = await foto.arrayBuffer();
       const uploaded = await Bun.write(fotoPath, fotoBuffer);

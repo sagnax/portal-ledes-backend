@@ -37,4 +37,16 @@ async function hashEmail(email: string) {
   return emailHash;
 }
 
-export { hashSenha, verificaSenha, hashEmail };
+/**
+ * Faz o hash do texto usando o algoritmo md5.
+ * 
+ * @param texto texto a ser criptografado
+ * @returns texto criptografado
+ */
+async function hashTexto(texto: string) {
+  const hasher = new Bun.CryptoHasher("md5");
+  const textoHash = hasher.update(texto).digest("hex");
+  return textoHash;
+}
+
+export { hashSenha, verificaSenha, hashEmail, hashTexto };
