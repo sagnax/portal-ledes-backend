@@ -68,7 +68,7 @@ const app = new Elysia({ prefix: '/api' })
       },
     } 
   })
-  .post('/update-api', (context) => console.log('api updated', context.body))
+  .post('/update-api', (context) => console.log('api updated', context.request.body))
 
   // Controladores das rotas
   .use(authController)
