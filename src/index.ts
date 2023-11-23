@@ -5,6 +5,7 @@ import { APIResponseError } from '~utils/erros';
 // Controllers Imports
 import { authController } from '~modules/auth';
 import { usersController } from '~modules/users';
+import { publicacoesController } from '~modules/publicacoes';
 import { projetosController } from '~modules/projetos';
 import { tipoProjetosController } from '~modules/tipo-projetos';
 import { tipoSituacoesProjetosController } from '~modules/tipo-situacoes-projetos';
@@ -68,11 +69,12 @@ const app = new Elysia({ prefix: '/api' })
       },
     } 
   })
-  .post('/update-api', (context) => console.log('api updated', context.request.body))
+  // .post('/update-api', (context) => console.log('api updated', context.request.body))
 
   // Controladores das rotas
   .use(authController)
   .use(usersController)
+  .use(publicacoesController)
   .use(projetosController)
   .use(tipoSituacoesProjetosController)
   .use(tipoProjetosController)
@@ -85,5 +87,8 @@ const app = new Elysia({ prefix: '/api' })
   .listen(2077);
 
 console.log(
-  `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
+  `🦊 Elysia is running at http://${app.server?.hostname}:${app.server?.port}${app.config.prefix}`
+);
+console.log(
+  `🦊 Swagger at http://${app.server?.hostname}:${app.server?.port}${app.config.prefix}/swagger`
 );

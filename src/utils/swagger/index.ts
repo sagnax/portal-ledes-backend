@@ -26,6 +26,10 @@ const swaggerConfig = {
         description: 'Endpoints de usuários'
       },
       {
+        name: 'Publicações',
+        description: 'Endpoints de publicações'
+      },
+      {
         name: 'Projetos',
         description: 'Endpoints de projetos'
       },
