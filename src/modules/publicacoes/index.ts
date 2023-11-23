@@ -532,7 +532,7 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
         // }
       },
       orderBy: { 
-        id: 'asc' 
+        dataAgendamento: 'desc' 
       } 
     });
 
@@ -569,6 +569,242 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
             }
           },
         },
+      }
+    }
+  )
+
+  .post('/destaque/:id', async ({ params, body, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
+    // pega o usuario pelo token
+    const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
+    // verifica se o usuario tem permissão de Admin ou Publicações
+    verificaPermissao(usuario, "PUBLICACOES");
+
+    // pega os dados do body
+    const { destaque } = body;
+
+    // verifica se o id existe
+    const publicacaoParaEditar = await prisma.publicacoes.findUniqueAtivo({ where: { id: parseInt(params.id) } }) as unknown as Publicacoes;
+    if (!publicacaoParaEditar) {
+      return new APIResponseError ({
+        status: 404,
+        message: 'Publicação não existe.',
+        data: null
+      });
+    }
+
+    // edita o projeto
+    const publicacaoEditada = await prisma.publicacoes.updateWithAuthUser({
+      data: {
+        destaque,
+      },
+      where: {
+        id: parseInt(params.id)
+      }
+    },
+      usuario
+    ) as unknown as Publicacoes; // Conversão do tipo para poder acessar as propriedades
+
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
+
+    // retorna a publicação editada
+    set.status = 200;
+    return {
+      status: 200,
+      message: 'Publicação editada com sucesso.',
+      data: publicacaoEditada
+    }
+  },
+    {
+      beforeHandle: verificaAuthUser,
+      body: t.Object({
+        destaque: t.Boolean(),
+      }),
+      detail: { 
+        tags: ['Publicações'],
+        summary: 'Destacar Publicação',
+        description: 'Destaca ou não a publicação.',
+        security: [{ cookieAuth: [] }],
+        responses: {
+          200: {
+            description: 'OK.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Publicação editada com sucesso.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            }
+          },
+          401: { 
+            description: 'Unauthorized.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 401 },
+                    message: { type: 'string', example: 'Não autorizado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          403: { 
+            description: 'Forbidden.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 403 },
+                    message: { type: 'string', example: 'Usuário sem permissão.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          404: { 
+            description: 'Not Found.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 404 },
+                    message: { type: 'string', example: 'Publicação não encontrada.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+        }
+      }
+    }
+  )
+
+  .post('/visibilidade/:id', async ({ params, body, set, cookie, jwt, getAuthUser, verificaPermissao }) : Promise<APIResponse | APIResponseError> => {
+    // pega o usuario pelo token
+    const usuario = await getAuthUser({ jwt, cookie }) as Usuarios;
+    // verifica se o usuario tem permissão de Admin ou Publicações
+    verificaPermissao(usuario, "PUBLICACOES");
+
+    // pega os dados do body
+    const { visibilidade } = body;
+
+    // verifica se o id existe
+    const publicacaoParaEditar = await prisma.publicacoes.findUniqueAtivo({ where: { id: parseInt(params.id) } }) as unknown as Publicacoes;
+    if (!publicacaoParaEditar) {
+      return new APIResponseError ({
+        status: 404,
+        message: 'Publicação não existe.',
+        data: null
+      });
+    }
+
+    // edita o projeto
+    const publicacaoEditada = await prisma.publicacoes.updateWithAuthUser({
+      data: {
+        visibilidade: visibilidade ? 1 : 0,
+      },
+      where: {
+        id: parseInt(params.id)
+      }
+    },
+      usuario
+    ) as unknown as Publicacoes; // Conversão do tipo para poder acessar as propriedades
+
+    // desconecta do banco para não deixar a conexão aberta
+    await prisma.$disconnect();
+
+    // retorna a publicação editada
+    set.status = 200;
+    return {
+      status: 200,
+      message: 'Publicação editada com sucesso.',
+      data: publicacaoEditada
+    }
+  },
+    {
+      beforeHandle: verificaAuthUser,
+      body: t.Object({
+        visibilidade: t.Boolean(),
+      }),
+      detail: { 
+        tags: ['Publicações'],
+        summary: 'Visibilidade Publicação',
+        description: 'Torna a publicação visível ou não.',
+        security: [{ cookieAuth: [] }],
+        responses: {
+          200: {
+            description: 'OK.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 200 },
+                    message: { type: 'string', example: 'Publicação editada com sucesso.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            }
+          },
+          401: { 
+            description: 'Unauthorized.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 401 },
+                    message: { type: 'string', example: 'Não autorizado.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          403: { 
+            description: 'Forbidden.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 403 },
+                    message: { type: 'string', example: 'Usuário sem permissão.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+          404: { 
+            description: 'Not Found.',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'number', example: 404 },
+                    message: { type: 'string', example: 'Publicação não encontrada.' },
+                    data: { type: 'object' },
+                  }
+                }
+              }
+            } 
+          },
+        }
       }
     }
   )
