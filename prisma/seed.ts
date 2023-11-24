@@ -18,7 +18,7 @@ async function main() {
     where: { email: 'admin' },
     update: {},
     create: {
-      id: 1,
+      // id: 1,
       nome: 'Admin',
       email: 'admin',
       senha: senhaAdmin,
@@ -36,7 +36,7 @@ async function main() {
     where: { email: 'lucas' },
     update: {},
     create: {
-      id: 2,
+      // id: 2,
       nome: 'Lucas',
       email: 'lucas',
       senha: senhaTeste,
@@ -53,7 +53,7 @@ async function main() {
     where: { email: 'tiago' },
     update: {},
     create: {
-      id: 3,
+      // id: 3,
       nome: 'Tiago',
       email: 'tiago',
       senha: senhaTeste2,
@@ -70,7 +70,7 @@ async function main() {
     where: { email: 'guilherme' },
     update: {},
     create: {
-      id: 4,
+      // id: 4,
       nome: 'Guilherme',
       email: 'guilherme',
       senha: senhaTeste3,
