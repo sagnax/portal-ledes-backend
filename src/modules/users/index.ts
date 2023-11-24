@@ -199,7 +199,7 @@ export const usersController = new Elysia({ prefix: '/users' })
     const { nome, sobrenome, email, password, linkedin, github, curso, funcao, foto, permissaoAdmin, permissaoProjetos, permissaoPublicacoes, permissaoUsuarios } = body;
 
     // verifica se o id existe
-    const usuarioParaEditar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } });
+    const usuarioParaEditar = await prisma.usuarios.findUniqueAtivo({ where: { id: parseInt(params.id) } }) as unknown as Usuarios;
     if (!usuarioParaEditar) {
       return new APIResponseError ({
         status: 404,
@@ -211,17 +211,17 @@ export const usersController = new Elysia({ prefix: '/users' })
     // salva a foto no servidor
     let fotoPath = '';
     if (foto) {
-      fotoPath = `./public/uploads/img/usuarios/${email}/${foto.name}`;
+      fotoPath = `./public/uploads/img/usuarios/${email ?? usuarioParaEditar.email}/${foto.name}`;
       const fotoBuffer = await foto.arrayBuffer();
       const uploaded = await Bun.write(fotoPath, fotoBuffer);
     }
     else {
-      const hashedEmail = await hashEmail(email);
+      const hashedEmail = await hashEmail(email ?? usuarioParaEditar.email);
       fotoPath = `https://www.gravatar.com/avatar/${hashedEmail}?d=identicon`;
     }
 
     // edita o usuario
-    const hashedSenha = await hashSenha(password);
+    const hashedSenha = password ? (await hashSenha(password)) : (usuarioParaEditar.senha);
     const usuarioEditado = await prisma.usuarios.updateWithAuthUser({
       data: {
         nome,
@@ -240,10 +240,26 @@ export const usersController = new Elysia({ prefix: '/users' })
       },
       where: {
         id: parseInt(params.id)
+      },
+      select: {
+        id: true,
+        nome: true,
+        sobrenome: true,
+        email: true,
+        linkedin: true,
+        github: true,
+        curso: true,
+        funcao: true,
+        foto: true,
+        permissaoAdmin: true,
+        permissaoProjetos: true,
+        permissaoPublicacoes: true,
+        permissaoUsuarios: true,
       }
     },
       usuario
     );
+
 
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
@@ -261,8 +277,8 @@ export const usersController = new Elysia({ prefix: '/users' })
       body: t.Object({
         nome: t.Optional(t.String()),
         sobrenome: t.Optional(t.String()),
-        email: t.String({ default: 'teste@gmail.com' }),
-        password: t.String({ default: '!Abcde12345' }),
+        email: t.Optional(t.String({ default: 'teste@gmail.com' })),
+        password: t.Optional(t.String({ default: '!Abcde12345' })),
         linkedin: t.Optional(t.String({ default: 'https://linkedin.com/perfil' })),
         github: t.Optional(t.String({ default: 'https://github.com/perfil' })),
         curso: t.Optional(t.String()),
