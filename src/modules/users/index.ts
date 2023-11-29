@@ -481,6 +481,58 @@ export const usersController = new Elysia({ prefix: '/users' })
         curso: true,
         funcao: true,
         foto: true,
+        projetoUsuarios: {
+          select: {
+            id: true,
+            projeto: {
+              select: {
+                id: true,
+                foto: true,
+                titulo: true,
+                descricao: true,
+                dataInicio: true,
+                dataTermino: true,
+                coordenador: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    sobrenome: true,
+                    curso: true,
+                    funcao: true,
+                    foto: true,
+                  } 
+                },
+                situacaoProjeto: {
+                  select: {
+                    id: true,
+                    nome: true,
+                  }
+                },
+                tipoProjeto: {
+                  select: {
+                    id: true,
+                    nome: true,
+                  }
+                }
+              }
+            },
+            dataEntrada: true,
+            dataSaida: true,
+            tipoVinculo: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            tipoPapel: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            membroAtivo: true,
+          }
+        }
       },
       where: {
         id: parseInt(params.id)
@@ -559,6 +611,58 @@ export const usersController = new Elysia({ prefix: '/users' })
         curso: true,
         funcao: true,
         foto: true,
+        projetoUsuarios: {
+          select: {
+            id: true,
+            projeto: {
+              select: {
+                id: true,
+                foto: true,
+                titulo: true,
+                descricao: true,
+                dataInicio: true,
+                dataTermino: true,
+                coordenador: {
+                  select: {
+                    id: true,
+                    nome: true,
+                    sobrenome: true,
+                    curso: true,
+                    funcao: true,
+                    foto: true,
+                  } 
+                },
+                situacaoProjeto: {
+                  select: {
+                    id: true,
+                    nome: true,
+                  }
+                },
+                tipoProjeto: {
+                  select: {
+                    id: true,
+                    nome: true,
+                  }
+                }
+              }
+            },
+            dataEntrada: true,
+            dataSaida: true,
+            tipoVinculo: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            tipoPapel: {
+              select: {
+                id: true,
+                nome: true,
+              }
+            },
+            membroAtivo: true,
+          }
+        }
       },
       orderBy: { 
         nome: 'asc' 
