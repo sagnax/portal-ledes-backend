@@ -62,6 +62,7 @@ model Usuarios {
   coordenadorProjetos Projetos[]         @relation("Projetos_Usuarios")
   coordenadorLaboratorio ConfiguracaoSobreNos[] @relation("ConfiguracaoSobreNos_Usuarios")
   projetoUsuarios     Projeto_Usuarios[] @relation("Projeto_Usuarios_Usuarios")
+  autorPublicacoes    Publicacoes[]      @relation("Publicacoes_Usuarios")
 
   userCreatedUsuarios              Usuarios[]              @relation("Usuarios_UserCreated")
   userUpdatedUsuarios              Usuarios[]              @relation("Usuarios_UserUpdated")
@@ -218,6 +219,8 @@ model Publicacoes {
   id              Int       @id @default(autoincrement())
   titulo          String?
   corpo           String?
+  autor           Usuarios? @relation("Publicacoes_Usuarios", fields: [autorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  autorId         Int?
   destaque        Boolean   @default(false)
   capa            String?
   thumbnail       String?

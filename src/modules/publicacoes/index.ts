@@ -63,6 +63,11 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
         thumbnail: thumbnailPath,
         titulo,
         corpo,
+        autor: {
+          connect: {
+            id: usuario.id
+          }
+        },
         destaque,
         dataAgendamento: agendamento,
         visibilidade: visibilidade ? 1 : 0,
@@ -430,10 +435,23 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
     // pega a publicação pelo id
     const publicacao = await prisma.publicacoes.findUniqueAtivo({ 
       select : {
+        id: true,
         capa: true,
         thumbnail: true,
         titulo: true,
         corpo: true,
+        autor: {
+          select : {
+            id: true,
+            nome: true,
+            sobrenome: true,
+            linkedin: true,
+            github: true,
+            curso: true,
+            funcao: true,
+            foto: true,
+          }
+        },
         destaque: true,
         dataAgendamento: true,
         visibilidade: true,
@@ -515,10 +533,23 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
     // pega todas as publicações
     const publicacoes = await prisma.publicacoes.findManyAtivo({ 
       select : {
+        id: true,
         capa: true,
         thumbnail: true,
         titulo: true,
         corpo: true,
+        autor: {
+          select : {
+            id: true,
+            nome: true,
+            sobrenome: true,
+            linkedin: true,
+            github: true,
+            curso: true,
+            funcao: true,
+            foto: true,
+          }
+        },
         destaque: true,
         dataAgendamento: true,
         visibilidade: true,
