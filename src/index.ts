@@ -45,7 +45,9 @@ const app = new Elysia({ prefix: '/api' })
     }
   })
 
-  .use(cors())
+  .use(cors({
+    credentials: true,
+  }))
 
   // Documentação da Api
   .use(swagger(swaggerConfig))
