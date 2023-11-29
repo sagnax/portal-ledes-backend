@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
-import { swagger } from '@elysiajs/swagger'
+import { swagger } from '@elysiajs/swagger';
+import { cors } from '@elysiajs/cors';
 import { swaggerConfig } from '~utils/swagger';
 import { APIResponseError } from '~utils/erros';
 // Controllers Imports
@@ -43,6 +44,8 @@ const app = new Elysia({ prefix: '/api' })
       data: data,
     }
   })
+
+  .use(cors())
 
   // Documentação da Api
   .use(swagger(swaggerConfig))
