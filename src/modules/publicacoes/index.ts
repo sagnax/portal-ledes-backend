@@ -431,7 +431,21 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
     }
   )
 
-  .get('/view/:id', async ({ params, set }) : Promise<APIResponse | APIResponseError> => {
+  .get('/view/:id', async ({ params, set, cookie, jwt }) : Promise<APIResponse | APIResponseError> => {
+    // pega o usuario logado se tiver
+    // verifica se o usuario tem permissão de Admin ou Publicações
+    // se tiver, pode visualizar todas as publicações
+    let podeVisualizarTodasPublicacoes = false;
+    const user = await jwt.verify(cookie.authToken);
+    if (user) {
+      const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } }) as unknown as Usuarios;
+      if (usuario) {
+        if (usuario.permissaoAdmin || usuario.permissaoPublicacoes) {
+          podeVisualizarTodasPublicacoes = true;
+        }
+      }
+    }
+
     // pega a publicação pelo id
     const publicacao = await prisma.publicacoes.findUniqueAtivo({ 
       select : {
@@ -465,14 +479,15 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
         // }
       },
       where: {
-        id: parseInt(params.id)
+        id: parseInt(params.id),
+        visibilidade: podeVisualizarTodasPublicacoes ? undefined : 1
       }
     });
 
     if (!publicacao) {
       return new APIResponseError ({
         status: 404,
-        message: 'Publicação não existe.',
+        message: 'Publicação não encontrada.',
         data: null
       });
     }
@@ -529,7 +544,21 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
     }
   )
 
-  .get('/list', async ({ set }) : Promise<APIResponse> => {
+  .get('/list', async ({ set, cookie, jwt }) : Promise<APIResponse | APIResponseError> => {
+    // pega o usuario logado se tiver
+    // verifica se o usuario tem permissão de Admin ou Publicações
+    // se tiver, pode visualizar todas as publicações
+    let podeVisualizarTodasPublicacoes = false;
+    const user = await jwt.verify(cookie.authToken);
+    if (user) {
+      const usuario = await prisma.usuarios.findFirstAtivo({ where: { id: parseInt(user.id) } }) as unknown as Usuarios;
+      if (usuario) {
+        if (usuario.permissaoAdmin || usuario.permissaoPublicacoes) {
+          podeVisualizarTodasPublicacoes = true;
+        }
+      }
+    }
+    
     // pega todas as publicações
     const publicacoes = await prisma.publicacoes.findManyAtivo({ 
       select : {
@@ -561,6 +590,9 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
         //     caminhoArquivo: true,
         //   }
         // }
+      },
+      where: {
+        visibilidade: podeVisualizarTodasPublicacoes ? undefined : 1
       },
       orderBy: { 
         dataAgendamento: 'desc' 
