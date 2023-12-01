@@ -46,6 +46,8 @@ const app = new Elysia({ prefix: '/api' })
   })
 
   .use(cors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   }))
 
