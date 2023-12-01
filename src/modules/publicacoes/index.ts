@@ -4,6 +4,7 @@ import { hashTexto } from '~utils/hash';
 import { authMiddleware, verificaAuthUser } from '~middlewares/auth';
 import { Anexos, Projeto_Usuarios, Projetos, Publicacoes, Usuarios } from '@prisma/client';
 import { APIResponseError } from '~utils/erros';
+import { mkdirSync, existsSync, readFileSync } from 'fs';
 
 /**
  * Controller de publicações
@@ -25,12 +26,30 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
     const tituloHash = await hashTexto(titulo);
     
     // salva a capa no servidor
-    // TODO: salvar a capa 
-    const capaPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
+    let capaPath = `https://placehold.co/1920x1080?text=Publicacao+Capa`;
+    if (capa) {
+      // get the blob and save it in the server
+      capaPath = `./uploads/img/publicacoes/${capa.name}`;
+      const capaBuffer = await capa.arrayBuffer();
+      // verifica se a pasta existe
+      if (!existsSync(`./uploads/img/publicacoes`)) {
+        mkdirSync(`./uploads/img/publicacoes`, { recursive: true });
+      }
+      const uploaded = await Bun.write(capaPath, capaBuffer);
+    }
 
     // salva a thumbnail no servidor
-    // TODO: salvar a thumbnail 
-    const thumbnailPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
+    let thumbnailPath = `https://placehold.co/1920x1080?text=Publicacao+Thumbnail`;
+    if (thumbnail) {
+      // get the blob and save it in the server
+      thumbnailPath = `./uploads/img/publicacoes/${thumbnail.name}`;
+      const thumbnailBuffer = await thumbnail.arrayBuffer();
+      // verifica se a pasta existe
+      if (!existsSync(`./uploads/img/publicacoes`)) {
+        mkdirSync(`./uploads/img/publicacoes`, { recursive: true });
+      }
+      const uploaded = await Bun.write(thumbnailPath, thumbnailBuffer);
+    }
 
     // itera sobre os anexos, salvando-os no servidor
     // TODO: salvar os anexos
@@ -178,12 +197,30 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
     }
 
     // salva a capa no servidor
-    // TODO: deletar a capa antiga e salvar a nova
-    const capaPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
+    let capaPath = `https://placehold.co/1920x1080?text=Publicacao+Capa`;
+    if (capa) {
+      // get the blob and save it in the server
+      capaPath = `./uploads/img/publicacoes/${capa.name}`;
+      const capaBuffer = await capa.arrayBuffer();
+      // verifica se a pasta existe
+      if (!existsSync(`./uploads/img/publicacoes`)) {
+        mkdirSync(`./uploads/img/publicacoes`, { recursive: true });
+      }
+      const uploaded = await Bun.write(capaPath, capaBuffer);
+    }
 
     // salva a thumbnail no servidor
-    // TODO: deletar a thumbnail antiga e salvar a nova
-    const thumbnailPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
+    let thumbnailPath = `https://placehold.co/1920x1080?text=Publicacao+Thumbnail`;
+    if (thumbnail) {
+      // get the blob and save it in the server
+      thumbnailPath = `./uploads/img/publicacoes/${thumbnail.name}`;
+      const thumbnailBuffer = await thumbnail.arrayBuffer();
+      // verifica se a pasta existe
+      if (!existsSync(`./uploads/img/publicacoes`)) {
+        mkdirSync(`./uploads/img/publicacoes`, { recursive: true });
+      }
+      const uploaded = await Bun.write(thumbnailPath, thumbnailBuffer);
+    }
 
     // itera sobre os anexos, salvando-os no servidor
     // TODO: salvar os anexos
@@ -213,8 +250,8 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
     // edita o projeto
     const publicacaoEditada = await prisma.publicacoes.updateWithAuthUser({
       data: {
-        capa: capaPath,
-        thumbnail: thumbnailPath,
+        capa: capa ? capaPath : undefined,
+        thumbnail: thumbnail ? thumbnailPath : undefined,
         titulo,
         corpo,
         destaque,
@@ -482,7 +519,7 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
         id: parseInt(params.id),
         visibilidade: podeVisualizarTodasPublicacoes ? undefined : 1
       }
-    });
+    }) as unknown as Publicacoes;
 
     if (!publicacao) {
       return new APIResponseError ({
@@ -490,6 +527,32 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
         message: 'Publicação não encontrada.',
         data: null
       });
+    }
+
+    // pega o caminho da capa da publicação
+    const capaPath = publicacao.capa;
+    if(capaPath){
+      // verifica se a capa é do gravatar
+      const isGravatar = capaPath?.includes('placehold');
+      // se não for, pega a capa do servidor e transforma em base64 para enviar na resposta
+      if (!isGravatar) {
+        const capaFile = readFileSync(capaPath);
+        const capaBase64 = capaFile.toString('base64');
+        publicacao.capa = capaBase64;
+      }
+    }
+
+    // pega o caminho da thumbnail da publicação
+    const thumbnailPath = publicacao.thumbnail;
+    if(thumbnailPath){
+      // verifica se a thumbnail é do gravatar
+      const isGravatar = thumbnailPath?.includes('placehold');
+      // se não for, pega a thumbnail do servidor e transforma em base64 para enviar na resposta
+      if (!isGravatar) {
+        const thumbnailFile = readFileSync(thumbnailPath);
+        const thumbnailBase64 = thumbnailFile.toString('base64');
+        publicacao.thumbnail = thumbnailBase64;
+      }
     }
 
     // desconecta do banco para não deixar a conexão aberta
@@ -597,7 +660,36 @@ export const publicacoesController = new Elysia({ prefix: '/publicacoes' })
       orderBy: { 
         dataAgendamento: 'desc' 
       } 
-    });
+    }) as unknown as Publicacoes[];
+
+    for (let index = 0; index < publicacoes.length; index++) {
+      let publicacao = publicacoes[index];
+      // pega o caminho da capa da publicação
+      const capaPath = publicacao.capa;
+      if(capaPath){
+        // verifica se a capa é do gravatar
+        const isGravatar = capaPath?.includes('placehold');
+        // se não for, pega a capa do servidor e transforma em base64 para enviar na resposta
+        if (!isGravatar) {
+          const capaFile = readFileSync(capaPath);
+          const capaBase64 = capaFile.toString('base64');
+          publicacao.capa = capaBase64;
+        }
+      }
+
+      // pega o caminho da thumbnail da publicação
+      const thumbnailPath = publicacao.thumbnail;
+      if(thumbnailPath){
+        // verifica se a thumbnail é do gravatar
+        const isGravatar = thumbnailPath?.includes('placehold');
+        // se não for, pega a thumbnail do servidor e transforma em base64 para enviar na resposta
+        if (!isGravatar) {
+          const thumbnailFile = readFileSync(thumbnailPath);
+          const thumbnailBase64 = thumbnailFile.toString('base64');
+          publicacao.thumbnail = thumbnailBase64;
+        }
+      }
+    }
 
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();

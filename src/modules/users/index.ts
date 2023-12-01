@@ -217,13 +217,19 @@ export const usersController = new Elysia({ prefix: '/users' })
 
     // salva a foto no servidor
     let fotoPath = '';
+    const hashedEmail = await hashEmail(email ?? usuarioParaEditar.email);
+    const smallHashedEmail = hashedEmail.slice(0, 10);
     if (foto) {
-      fotoPath = `./public/uploads/img/usuarios/${email ?? usuarioParaEditar.email}/${foto.name}`;
+      // get the blob and save it in the server
+      fotoPath = `./uploads/img/usuarios/${smallHashedEmail}/${foto.name}`;
       const fotoBuffer = await foto.arrayBuffer();
+      // verifica se a pasta existe
+      if (!existsSync(`./uploads/img/usuarios/${smallHashedEmail}`)) {
+        mkdirSync(`./uploads/img/usuarios/${smallHashedEmail}`, { recursive: true });
+      }
       const uploaded = await Bun.write(fotoPath, fotoBuffer);
     }
     else {
-      const hashedEmail = await hashEmail(email ?? usuarioParaEditar.email);
       fotoPath = `https://www.gravatar.com/avatar/${hashedEmail}?d=identicon`;
     }
 
@@ -239,7 +245,7 @@ export const usersController = new Elysia({ prefix: '/users' })
         github,
         curso,
         funcao,
-        foto: fotoPath,
+        foto: foto ? fotoPath : undefined,
         permissaoAdmin,
         permissaoProjetos,
         permissaoPublicacoes,
@@ -687,7 +693,23 @@ export const usersController = new Elysia({ prefix: '/users' })
       orderBy: { 
         nome: 'asc' 
       } 
-    });
+    }) as unknown as Usuarios[];
+
+    for (let index = 0; index < usuarios.length; index++) {
+      let usuario = usuarios[index];
+      // pega o caminho da foto do usuario
+      const fotoPath = usuario.foto;
+      if(fotoPath){
+        // verifica se a foto é do gravatar
+        const isGravatar = fotoPath?.includes('gravatar');
+        // se não for, pega a foto do servidor e transforma em base64 para enviar na resposta
+        if (!isGravatar) {
+          const fotoFile = readFileSync(fotoPath);
+          const fotoBase64 = fotoFile.toString('base64');
+          usuario.foto = fotoBase64;
+        }
+      }
+    }
 
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();

@@ -4,6 +4,7 @@ import { hashTexto } from '~utils/hash'
 import { authMiddleware, verificaAuthUser } from '~middlewares/auth';
 import { Projeto_Usuarios, Projetos, Usuarios } from '@prisma/client';
 import { APIResponseError } from '~utils/erros';
+import { mkdirSync, existsSync, readFileSync } from 'fs';
 
 /**
  * Controller de projetos
@@ -22,15 +23,16 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     const { foto, titulo, dataInicio, dataTermino, descricao, coordenadorId, situacaoProjetoId, tipoProjetoId, projetoUsuarios } = body;
 
     // salva a foto no servidor
-    let fotoPath = '';
+    let fotoPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
     if (foto) {
-      const tituloHash = await hashTexto(titulo);
-      fotoPath = `./public/uploads/img/projetos/${tituloHash}/${foto.name}`;
+      // get the blob and save it in the server
+      fotoPath = `./uploads/img/projetos/${foto.name}`;
       const fotoBuffer = await foto.arrayBuffer();
+      // verifica se a pasta existe
+      if (!existsSync(`./uploads/img/projetos`)) {
+        mkdirSync(`./uploads/img/projetos`, { recursive: true });
+      }
       const uploaded = await Bun.write(fotoPath, fotoBuffer);
-    }
-    else {
-      fotoPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
     }
 
     const inicioProjeto = new Date(dataInicio);
@@ -211,15 +213,16 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     }
 
     // salva a foto no servidor
-    let fotoPath = '';
+    let fotoPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
     if (foto) {
-      const tituloHash = Bun.hash(titulo);
-      fotoPath = `./public/uploads/img/projetos/${tituloHash}/${foto.name}`;
+      // get the blob and save it in the server
+      fotoPath = `./uploads/img/projetos/${foto.name}`;
       const fotoBuffer = await foto.arrayBuffer();
+      // verifica se a pasta existe
+      if (!existsSync(`./uploads/img/projetos`)) {
+        mkdirSync(`./uploads/img/projetos`, { recursive: true });
+      }
       const uploaded = await Bun.write(fotoPath, fotoBuffer);
-    }
-    else {
-      fotoPath = `https://placehold.co/1920x1080?text=Capa+Projeto`;
     }
 
     const inicioProjeto = new Date(dataInicio);
@@ -228,7 +231,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     // edita o projeto
     const projetoEditado = await prisma.projetos.updateWithAuthUser({
       data: {
-        foto: fotoPath,
+        foto: foto ? fotoPath : undefined,
         titulo,
         dataInicio: inicioProjeto,
         dataTermino: terminoProjeto,
@@ -617,7 +620,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
       where: {
         id: parseInt(params.id)
       }
-    });
+    }) as unknown as Projetos;
 
     if (!projeto) {
       return new APIResponseError ({
@@ -625,6 +628,19 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
         message: 'Projeto não existe.',
         data: null
       });
+    }
+
+    // pega o caminho da foto do projeto
+    const fotoPath = projeto.foto;
+    if(fotoPath){
+      // verifica se a foto é do gravatar
+      const isGravatar = fotoPath?.includes('placehold');
+      // se não for, pega a foto do servidor e transforma em base64 para enviar na resposta
+      if (!isGravatar) {
+        const fotoFile = readFileSync(fotoPath);
+        const fotoBase64 = fotoFile.toString('base64');
+        projeto.foto = fotoBase64;
+      }
     }
 
     // desconecta do banco para não deixar a conexão aberta
@@ -737,7 +753,23 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
       orderBy: { 
         id: 'asc' 
       } 
-    });
+    }) as unknown as Projetos[];
+
+    for (let index = 0; index < projetos.length; index++) {
+      let projeto = projetos[index];
+      // pega o caminho da foto do projeto
+      const fotoPath = projeto.foto;
+      if(fotoPath){
+        // verifica se a foto é do gravatar
+        const isGravatar = fotoPath?.includes('placehold');
+        // se não for, pega a foto do servidor e transforma em base64 para enviar na resposta
+        if (!isGravatar) {
+          const fotoFile = readFileSync(fotoPath);
+          const fotoBase64 = fotoFile.toString('base64');
+          projeto.foto = fotoBase64;
+        }
+      }
+    }
 
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
