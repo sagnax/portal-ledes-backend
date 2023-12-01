@@ -1,5 +1,5 @@
 /** Regex usado para verificar se a senha atende os requisitos mínimos. */
-const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{10,}$/;
+const senhaRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@#$!%*?&]{10,}$/;
 
 /**
  * Faz a validação da senha usando o regex.
