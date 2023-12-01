@@ -563,6 +563,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     // pega o projeto pelo id
     const projeto = await prisma.projetos.findUniqueAtivo({ 
       select : {
+        id: true,
         foto: true,
         titulo: true,
         descricao: true,
@@ -682,6 +683,7 @@ export const projetosController = new Elysia({ prefix: '/projetos' })
     // pega todos os projetos
     const projetos = await prisma.projetos.findManyAtivo({ 
       select : {
+        id: true,
         foto: true,
         titulo: true,
         descricao: true,
