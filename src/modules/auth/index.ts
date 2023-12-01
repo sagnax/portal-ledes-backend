@@ -34,7 +34,7 @@ export const authController = new Elysia({ prefix: '/auth' })
     // se a senha estiver correta, cria o token
     const token = await jwt.sign({ id: usuario.id.toString() });
     // seta o token no cookie
-    setCookie('authToken', token, { httpOnly: true, maxAge: 60 * 10, sameSite: 'none' });
+    setCookie('authToken', token, { maxAge: 60 * 10 });
     
     // desconecta do banco para não deixar a conexão aberta
     await prisma.$disconnect();
