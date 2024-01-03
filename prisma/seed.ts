@@ -84,40 +84,40 @@ async function main() {
 
   const tipoVinculos = await prisma.tipoVinculos.createMany({
     data: [
-      { id: 1, nome: 'Aluno', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 2, nome: 'Professor', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 3, nome: 'Pesquisador', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 4, nome: 'Colaborador', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 5, nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Aluno', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Professor', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Pesquisador', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Colaborador', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
     ],
     skipDuplicates: true,
   });
 
   const tipoPapeis = await prisma.tipoPapeis.createMany({
     data: [
-      { id: 1, nome: 'Analista', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 2, nome: 'Front-End', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 3, nome: 'Back-End', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 4, nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Analista', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Front-End', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Back-End', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
     ],
     skipDuplicates: true,
   });
 
   const tipoSituacoesProjetos = await prisma.tipoSituacoesProjetos.createMany({
     data: [
-      { id: 1, nome: 'Em andamento', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 2, nome: 'Concluído', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 3, nome: 'Cancelado', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Em andamento', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Concluído', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Cancelado', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
     ],
     skipDuplicates: true,
   });
 
   const tipoProjetos = await prisma.tipoProjetos.createMany({
     data: [
-      { id: 1, nome: 'Pesquisa', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 2, nome: 'Extensão', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 3, nome: 'Ensino', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
-      { id: 4, nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Pesquisa', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Extensão', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Ensino', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
+      { nome: 'Outro', situacaoCadastroId: 1, userCreatedId: 1, userUpdatedId: 1 },
     ],
     skipDuplicates: true,
   });
